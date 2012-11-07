@@ -142,11 +142,14 @@ bool QDeviceDiscovery::checkDeviceType(const QString &device)
     long bitsKey[LONG_FIELD_SIZE(KEY_CNT)];
     if (ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(bitsKey)), bitsKey) >= 0 ) {
         if (!ret && (m_types & Device_Keyboard)) {
-            if (testBit(KEY_Q, bitsKey)) {
+            for (int key = KEY_ESC; key <= KEY_RFKILL; key++) {
+                if (testBit(key, bitsKey)) {
 #ifdef QT_QPA_DEVICE_DISCOVERY_DEBUG
-                qWarning() << "DeviceDiscovery found keyboard at" << device;
+                    qWarning() << "DeviceDiscovery found keyboard at" << device;
 #endif
-                ret = true;
+                    ret = true;
+                    break;
+                }
             }
         }
 
