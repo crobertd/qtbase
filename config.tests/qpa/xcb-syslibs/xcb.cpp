@@ -50,6 +50,7 @@
 #include <xcb/xcb_image.h>
 #include <xcb/xcb_keysyms.h>
 #include <xcb/sync.h>
+#include <xcb/randr.h>
 #include <xcb/shm.h>
 
 int main(int, char **)
@@ -58,7 +59,8 @@ int main(int, char **)
 
     xcb_connection_t *connection = xcb_connect("", &primaryScreen);
 
-    xcb_generic_event_t *event = xcb_poll_for_queued_event(connection);
+    // This won't compile unless libxcb >= 1.5 which defines XCB_ATOM_PRIMARY.
+    int xcbAtomPrimary = XCB_ATOM_PRIMARY;
 
     return 0;
 }

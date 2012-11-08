@@ -2331,7 +2331,7 @@ bool QApplicationPrivate::isWindowBlocked(QWindow *window, QWindow **blockingWin
                 return false;
         }
 
-        Qt::WindowModality windowModality = modalWindow->windowModality();
+        Qt::WindowModality windowModality = modalWindow->modality();
         QWidgetWindow *modalWidgetWindow = qobject_cast<QWidgetWindow *>(modalWindow);
         if (windowModality == Qt::NonModal) {
             // determine the modality type if it hasn't been set on the
@@ -2481,6 +2481,12 @@ bool QApplicationPrivate::sendMouseEvent(QWidget *receiver, QMouseEvent *event,
     const bool graphicsWidget = nativeWidget->testAttribute(Qt::WA_DontShowOnScreen);
 
     bool widgetUnderMouse = QRectF(receiver->rect()).contains(event->localPos());
+
+    // Clear the obsolete leaveAfterRelease value, if mouse button has been released but
+    // leaveAfterRelease has not been updated.
+    // This happens e.g. when modal dialog or popup is shown as a response to button click.
+    if (leaveAfterRelease && !*buttonDown && !event->buttons())
+        leaveAfterRelease = 0;
 
     if (*buttonDown) {
         if (!graphicsWidget) {
