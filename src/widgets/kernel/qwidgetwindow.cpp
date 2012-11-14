@@ -205,6 +205,12 @@ bool QWidgetWindow::event(QEvent *event)
         handleContextMenuEvent(static_cast<QContextMenuEvent *>(event));
         return true;
 #endif
+
+    // Handing show events to widgets (see below) here would cause them to be triggered twice
+    case QEvent::Show:
+    case QEvent::Hide:
+        return QWindow::event(event);
+
     default:
         break;
     }
@@ -224,6 +230,7 @@ void QWidgetWindow::handleEnterLeaveEvent(QEvent *event)
         QWindowSystemInterfacePrivate::EnterEvent *systemEvent =
             static_cast<QWindowSystemInterfacePrivate::EnterEvent *>
             (QWindowSystemInterfacePrivate::peekWindowSystemEvent(QWindowSystemInterfacePrivate::Enter));
+        const QPointF globalPosF = systemEvent ? systemEvent->globalPos : QGuiApplicationPrivate::lastCursorPosition;
         if (systemEvent) {
             if (QWidgetWindow *enterWindow = qobject_cast<QWidgetWindow *>(systemEvent->enter))
             {
@@ -249,12 +256,15 @@ void QWidgetWindow::handleEnterLeaveEvent(QEvent *event)
             QWidget *leave = m_widget;
             if (qt_last_mouse_receiver && !qt_last_mouse_receiver->internalWinId())
                 leave = qt_last_mouse_receiver.data();
-            QApplicationPrivate::dispatchEnterLeave(enter, leave);
+            QApplicationPrivate::dispatchEnterLeave(enter, leave, globalPosF);
             qt_last_mouse_receiver = enter;
         }
     } else {
-        QApplicationPrivate::dispatchEnterLeave(m_widget, 0);
-        qt_last_mouse_receiver = m_widget;
+        const QEnterEvent *ee = static_cast<QEnterEvent *>(event);
+        QWidget *child = m_widget->childAt(ee->pos());
+        QWidget *receiver = child ? child : m_widget;
+        QApplicationPrivate::dispatchEnterLeave(receiver, 0, ee->screenPos());
+        qt_last_mouse_receiver = receiver;
     }
 }
 

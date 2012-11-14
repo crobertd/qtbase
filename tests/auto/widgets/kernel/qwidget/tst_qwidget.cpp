@@ -3968,16 +3968,7 @@ void tst_QWidget::showHideEvent()
     if (create && !widget.testAttribute(Qt::WA_WState_Created))
         widget.create();
 
-    if (m_platform == QStringLiteral("windows") || m_platform == QStringLiteral("xcb")) {
-        QEXPECT_FAIL("window: only show", "QTBUG-26424", Continue);
-        QEXPECT_FAIL("window: show/hide", "QTBUG-26424", Continue);
-        QEXPECT_FAIL("window: show/hide/create", "QTBUG-26424", Continue);
-    }
     QCOMPARE(widget.numberOfShowEvents, expectedShowEvents);
-    if (m_platform == QStringLiteral("windows") || m_platform == QStringLiteral("xcb")) {
-        QEXPECT_FAIL("window: show/hide", "QTBUG-26424", Continue);
-        QEXPECT_FAIL("window: show/hide/create", "QTBUG-26424", Continue);
-    }
     QCOMPARE(widget.numberOfHideEvents, expectedHideEvents);
 }
 
@@ -5416,6 +5407,7 @@ void tst_QWidget::setToolTip()
     // Mouse over doesn't work on Windows mobile, so skip the rest of the test for that platform.
 #ifndef Q_OS_WINCE_WM
     for (int pass = 0; pass < 2; ++pass) {
+        QCursor::setPos(0, 0);
         QScopedPointer<QWidget> popup(new QWidget(0, Qt::Popup));
         popup->setObjectName(QString::fromLatin1("tst_qwidget setToolTip #%1").arg(pass));
         popup->setWindowTitle(popup->objectName());
@@ -5430,17 +5422,16 @@ void tst_QWidget::setToolTip()
         popup->setToolTip(QLatin1String("TOOLTIP POPUP"));
         popup->show();
         QVERIFY(QTest::qWaitForWindowExposed(popup.data()));
+        QWindow *popupWindow = popup->windowHandle();
         QTest::qWait(10);
-        QTest::mouseMove(frame);
+        QTest::mouseMove(popupWindow, QPoint(25, 25));
         QTest::qWait(900);          // delay is 700
 
-        if (m_platform == QStringLiteral("xcb"))
-            QSKIP("QTBUG-26424");
         QCOMPARE(spy1.count(), 1);
         QCOMPARE(spy2.count(), 0);
         if (pass == 0)
             QTest::qWait(2200);     // delay is 2000
-        QTest::mouseMove(popup.data());
+        QTest::mouseMove(popupWindow);
     }
 #endif
 }
@@ -8556,6 +8547,7 @@ void tst_QWidget::syntheticEnterLeave()
 
     MyWidget window;
     window.setWindowFlags(Qt::WindowStaysOnTopHint);
+    window.move(200, 200);
     window.resize(200, 200);
 
     MyWidget *child1 = new MyWidget(&window);
@@ -8645,8 +8637,6 @@ void tst_QWidget::syntheticEnterLeave()
 #ifndef QTEST_NO_CURSOR
 void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
 {
-    if (m_platform == QStringLiteral("windows") || m_platform == QStringLiteral("xcb"))
-        QSKIP("QTBUG-26424");
     class SELParent : public QWidget
     {
     public:
@@ -8674,6 +8664,7 @@ void tst_QWidget::taskQTBUG_4055_sendSyntheticEnterLeave()
     QCursor::setPos(QPoint(0,0));
 
      SELParent parent;
+     parent.move(200, 200);
      parent.resize(200, 200);
      SELChild child(&parent);
      child.resize(200, 200);
@@ -9644,7 +9635,7 @@ void tst_QWidget::underMouse()
 
     // Enter window, outside children
     // Note: QTest::mouseMove will not generate enter events for windows, so send one explicitly
-    QWindowSystemInterface::handleEnterEvent(window);
+    QWindowSystemInterface::handleEnterEvent(window, inWindowPoint, window->mapToGlobal(inWindowPoint));
     QTest::mouseMove(window, inWindowPoint);
     QVERIFY(topLevelWidget.underMouse());
     QVERIFY(!childWidget1.underMouse());
@@ -9763,7 +9754,7 @@ void tst_QWidget::underMouse()
     childWidget1.resetCounts();
 
     // Mouse enters back in, should cause enter to topLevelWidget
-    QWindowSystemInterface::handleEnterEvent(window);
+    QWindowSystemInterface::handleEnterEvent(window, inWindowPoint, window->mapToGlobal(inWindowPoint));
     QApplication::processEvents();
     QVERIFY(!topLevelWidget.underMouse());
     QVERIFY(!childWidget1.underMouse());
@@ -9797,7 +9788,8 @@ void tst_QWidget::underMouse()
 
     // Mouse enters popup, should cause enter to popup and leave to current widgets under mouse
     QWindowSystemInterface::handleLeaveEvent(window);
-    QWindowSystemInterface::handleEnterEvent(popupWindow);
+    const QPoint popupCenter = popupWindow->geometry().center();
+    QWindowSystemInterface::handleEnterEvent(popupWindow, popupWindow->mapFromGlobal(popupCenter), popupCenter);
     QApplication::processEvents();
     QVERIFY(!topLevelWidget.underMouse());
     QVERIFY(!childWidget1.underMouse());
@@ -9832,7 +9824,7 @@ void tst_QWidget::underMouse()
 
     // Mouse leaves popup and enters topLevelWidget, should cause enter to topLevelWidget and leave for popup
     QWindowSystemInterface::handleLeaveEvent(popupWindow);
-    QWindowSystemInterface::handleEnterEvent(window);
+    QWindowSystemInterface::handleEnterEvent(window, inWindowPoint, window->mapToGlobal(inWindowPoint));
     QApplication::processEvents();
     QVERIFY(!topLevelWidget.underMouse());
     QVERIFY(!childWidget1.underMouse());
@@ -9885,7 +9877,7 @@ public slots:
         QPoint point2(15, 20);
         QPoint point3(20, 20);
         QWindow *window = modal->windowHandle();
-        QWindowSystemInterface::handleEnterEvent(window);
+        QWindowSystemInterface::handleEnterEvent(window, point1, window->mapToGlobal(point1));
         QTest::mouseMove(window, point1);
         QTest::mouseMove(window, point2);
         QTest::mouseMove(window, point3);
@@ -9931,7 +9923,7 @@ void tst_QWidget::taskQTBUG_27643_enterEvents()
     QWindow *window = dialog.windowHandle();
     QPoint overButton(25, 25);
 
-    QWindowSystemInterface::handleEnterEvent(window);
+    QWindowSystemInterface::handleEnterEvent(window, overButton, window->mapToGlobal(overButton));
     QTest::mouseMove(window, overButton);
     QTest::mouseClick(window, Qt::LeftButton, 0, overButton, 0);
 

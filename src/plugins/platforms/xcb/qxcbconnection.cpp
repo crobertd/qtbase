@@ -961,6 +961,30 @@ void QXcbConnection::processXcbEvents()
         if (!response_type) {
             handleXcbError((xcb_generic_error_t *)event);
         } else {
+            if (response_type == XCB_MOTION_NOTIFY) {
+                // compress multiple motion notify events in a row
+                // to avoid swamping the event queue
+                xcb_generic_event_t *next = eventqueue->value(i+1, 0);
+                if (next && (next->response_type & ~0x80) == XCB_MOTION_NOTIFY)
+                    continue;
+            }
+
+            if (response_type == XCB_CONFIGURE_NOTIFY) {
+                // compress multiple configure notify events for the same window
+                bool found = false;
+                for (int j = i; j < eventqueue->size(); ++j) {
+                    xcb_generic_event_t *other = eventqueue->at(j);
+                    if (other && (other->response_type & ~0x80) == XCB_CONFIGURE_NOTIFY
+                        && ((xcb_configure_notify_event_t *)other)->event == ((xcb_configure_notify_event_t *)event)->event)
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found)
+                    continue;
+            }
+
             QVector<PeekFunc>::iterator it = m_peekFuncs.begin();
             while (it != m_peekFuncs.end()) {
                 // These callbacks return true if the event is what they were

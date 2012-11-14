@@ -261,14 +261,15 @@ static const struct {
     char key[14], value[13];
 } qtConfEntries[] = {
     { "Prefix", "." },
-    { "Documentation", "doc" },
+    { "Documentation", "doc" }, // should be ${Data}/doc
     { "Headers", "include" },
     { "Libraries", "lib" },
     { "Binaries", "bin" },
-    { "Plugins", "plugins" },
-    { "Imports", "imports" },
+    { "Plugins", "plugins" }, // should be ${ArchData}/plugins
+    { "Imports", "imports" }, // should be ${ArchData}/imports
+    { "ArchData", "." },
     { "Data", "." },
-    { "Translations", "translations" },
+    { "Translations", "translations" }, // should be ${Data}/translations
     { "Examples", "examples" },
     { "Tests", "tests" },
 #ifdef QT_BOOTSTRAPPED
@@ -358,9 +359,13 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
             ret = config->value(key, defaultValue).toString();
 
 #ifdef QT_BOOTSTRAPPED
-            if (ret.isEmpty() && loc == HostPrefixPath)
-                ret = config->value(QLatin1String(qtConfEntries[PrefixPath].key),
-                                    QLatin1String(qtConfEntries[PrefixPath].value)).toString();
+            if (ret.isEmpty()) {
+                if (loc == HostPrefixPath)
+                    ret = config->value(QLatin1String(qtConfEntries[PrefixPath].key),
+                                        QLatin1String(qtConfEntries[PrefixPath].value)).toString();
+                else if (loc == TargetSpecPath || loc == HostSpecPath)
+                    ret = QString::fromLocal8Bit(qt_configure_prefix_path_strs[loc] + 12);
+            }
 #endif
 
             // expand environment variables in the form $(ENVVAR)
@@ -440,7 +445,8 @@ QLibraryInfo::rawLocation(LibraryLocation loc, PathGroup group)
     \value BinariesPath The location of installed Qt binaries (tools and applications).
     \value PluginsPath The location of installed Qt plugins.
     \value ImportsPath The location of installed QML extensions to import.
-    \value DataPath The location of general Qt data.
+    \value ArchDataPath The location of general architecture-dependent Qt data.
+    \value DataPath The location of general architecture-independent Qt data.
     \value TranslationsPath The location of translation information for Qt strings.
     \value ExamplesPath The location for examples upon install.
     \value TestsPath The location of installed Qt testcases.

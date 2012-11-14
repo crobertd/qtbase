@@ -431,16 +431,20 @@ void Configure::parseCmdLine()
     argCount = configCmdLine.size();
 #endif
 
+    bool isDeviceMkspec = false;
+
     // Look first for XQMAKESPEC
     for (int j = 0 ; j < argCount; ++j)
     {
-        if (configCmdLine.at(j) == "-xplatform") {
+        if ((configCmdLine.at(j) == "-xplatform") || (configCmdLine.at(j) == "-device")) {
+            isDeviceMkspec = (configCmdLine.at(j) == "-device");
             ++j;
             if (j == argCount)
                 break;
             dictionary["XQMAKESPEC"] = configCmdLine.at(j);
             if (!dictionary[ "XQMAKESPEC" ].isEmpty())
                 applySpecSpecifics();
+            break;
         }
     }
 
@@ -519,7 +523,8 @@ void Configure::parseCmdLine()
             dictionary["OBSOLETE_ARCH_ARG"] = "yes";
         } else if (configCmdLine.at(i) == "-embedded") {
             dictionary[ "EMBEDDED" ] = "yes";
-        } else if (configCmdLine.at(i) == "-xplatform") {
+        } else if (configCmdLine.at(i) == "-xplatform"
+                || configCmdLine.at(i) == "-device") {
             ++i;
             // do nothing
         }
@@ -1061,6 +1066,13 @@ void Configure::parseCmdLine()
                 break;
             dictionary[ "QT_INSTALL_IMPORTS" ] = configCmdLine.at(i);
         }
+        else if (configCmdLine.at(i) == "-archdatadir") {
+            ++i;
+            if (i == argCount)
+                break;
+            dictionary[ "QT_INSTALL_ARCHDATA" ] = configCmdLine.at(i);
+        }
+
         else if (configCmdLine.at(i) == "-datadir") {
             ++i;
             if (i == argCount)
@@ -1269,11 +1281,32 @@ void Configure::parseCmdLine()
     // Tell the user how to confclean before the next configure
     dictionary["CONFCLEANINSTRUCTION"] = dictionary["MAKE"] + QString(" confclean");
 
-    // Ensure that -spec (XQMAKESPEC) exists in the mkspecs folder as well
-    if (dictionary.contains("XQMAKESPEC") &&
-        !mkspecs.contains(dictionary["XQMAKESPEC"], Qt::CaseInsensitive)) {
+    if (isDeviceMkspec) {
+        const QStringList devices = mkspecs.filter("devices/", Qt::CaseInsensitive);
+        const QStringList family = devices.filter(dictionary["XQMAKESPEC"], Qt::CaseInsensitive);
+
+        if (family.isEmpty()) {
+            dictionary["HELP"] = "yes";
+            cout << "Error: No device matching '" << dictionary["XQMAKESPEC"] << "'." << endl;
+        } else if (family.size() > 1) {
+            dictionary["HELP"] = "yes";
+
+            cout << "Error: Multiple matches for device '" << dictionary["XQMAKESPEC"] << "'. Candidates are:" << endl;
+
+            foreach (const QString &device, family)
+                cout << "\t* " << device << endl;
+        } else {
+            Q_ASSERT(family.size() == 1);
+            dictionary["XQMAKESPEC"] = family.at(0);
+        }
+
+    } else {
+        // Ensure that -spec (XQMAKESPEC) exists in the mkspecs folder as well
+        if (dictionary.contains("XQMAKESPEC") &&
+                !mkspecs.contains(dictionary["XQMAKESPEC"], Qt::CaseInsensitive)) {
             dictionary["HELP"] = "yes";
             cout << "Invalid option \"" << dictionary["XQMAKESPEC"] << "\" for -xplatform." << endl;
+        }
     }
 
     // Ensure that the crt to be deployed can be found
@@ -1551,12 +1584,13 @@ bool Configure::displayHelp()
 
         desc(       "-bindir <dir>",                    "Executables will be installed to <dir>\n(default PREFIX/bin)");
         desc(       "-libdir <dir>",                    "Libraries will be installed to <dir>\n(default PREFIX/lib)");
-        desc(       "-docdir <dir>",                    "Documentation will be installed to <dir>\n(default PREFIX/doc)");
         desc(       "-headerdir <dir>",                 "Headers will be installed to <dir>\n(default PREFIX/include)");
-        desc(       "-plugindir <dir>",                 "Plugins will be installed to <dir>\n(default PREFIX/plugins)");
-        desc(       "-importdir <dir>",                 "Imports for QML will be installed to <dir>\n(default PREFIX/imports)");
+        desc(       "-archdatadir <dir>",               "Architecture-dependent data used by Qt will be installed to <dir>\n(default PREFIX)");
+        desc(       "-plugindir <dir>",                 "Plugins will be installed to <dir>\n(default ARCHDATADIR/plugins)");
+        desc(       "-importdir <dir>",                 "Imports for QML1 will be installed to <dir>\n(default ARCHDATADIR/imports)");
         desc(       "-datadir <dir>",                   "Data used by Qt programs will be installed to <dir>\n(default PREFIX)");
-        desc(       "-translationdir <dir>",            "Translations of Qt programs will be installed to <dir>\n(default PREFIX/translations)");
+        desc(       "-docdir <dir>",                    "Documentation will be installed to <dir>\n(default DATADIR/doc)");
+        desc(       "-translationdir <dir>",            "Translations of Qt programs will be installed to <dir>\n(default DATADIR/translations)");
         desc(       "-examplesdir <dir>",               "Examples will be installed to <dir>\n(default PREFIX/examples)");
         desc(       "-testsdir <dir>",                  "Tests will be installed to <dir>\n(default PREFIX/tests)\n");
 
@@ -3361,11 +3395,12 @@ void Configure::displayConfig()
     sout << "Install prefix.............." << QDir::toNativeSeparators(dictionary["QT_INSTALL_PREFIX"]) << endl;
     sout << "Headers installed to........" << QDir::toNativeSeparators(dictionary["QT_INSTALL_HEADERS"]) << endl;
     sout << "Libraries installed to......" << QDir::toNativeSeparators(dictionary["QT_INSTALL_LIBS"]) << endl;
+    sout << "Arch-dep. data to..........." << QDir::toNativeSeparators(dictionary["QT_INSTALL_ARCHDATA"]) << endl;
     sout << "Plugins installed to........" << QDir::toNativeSeparators(dictionary["QT_INSTALL_PLUGINS"]) << endl;
     sout << "Imports installed to........" << QDir::toNativeSeparators(dictionary["QT_INSTALL_IMPORTS"]) << endl;
     sout << "Binaries installed to......." << QDir::toNativeSeparators(dictionary["QT_INSTALL_BINS"]) << endl;
+    sout << "Arch-indep. data to........." << QDir::toNativeSeparators(dictionary["QT_INSTALL_DATA"]) << endl;
     sout << "Docs installed to..........." << QDir::toNativeSeparators(dictionary["QT_INSTALL_DOCS"]) << endl;
-    sout << "Data installed to..........." << QDir::toNativeSeparators(dictionary["QT_INSTALL_DATA"]) << endl;
     sout << "Translations installed to..." << QDir::toNativeSeparators(dictionary["QT_INSTALL_TRANSLATIONS"]) << endl;
     sout << "Examples installed to......." << QDir::toNativeSeparators(dictionary["QT_INSTALL_EXAMPLES"]) << endl;
     sout << "Tests installed to.........." << QDir::toNativeSeparators(dictionary["QT_INSTALL_TESTS"]) << endl;
@@ -3486,22 +3521,24 @@ void Configure::generateQConfigCpp()
     if (dictionary["QT_INSTALL_PREFIX"].isEmpty())
         qipempty = true;
 
-    if (!dictionary["QT_INSTALL_DOCS"].size())
-        dictionary["QT_INSTALL_DOCS"] = qipempty ? "" : dictionary["QT_INSTALL_PREFIX"] + "/doc";
     if (!dictionary["QT_INSTALL_HEADERS"].size())
         dictionary["QT_INSTALL_HEADERS"] = qipempty ? "" : dictionary["QT_INSTALL_PREFIX"] + "/include";
     if (!dictionary["QT_INSTALL_LIBS"].size())
         dictionary["QT_INSTALL_LIBS"] = qipempty ? "" : dictionary["QT_INSTALL_PREFIX"] + "/lib";
+    if (!dictionary["QT_INSTALL_ARCHDATA"].size())
+        dictionary["QT_INSTALL_ARCHDATA"] = qipempty ? "" : dictionary["QT_INSTALL_PREFIX"];
     if (!dictionary["QT_INSTALL_BINS"].size())
         dictionary["QT_INSTALL_BINS"] = qipempty ? "" : dictionary["QT_INSTALL_PREFIX"] + "/bin";
     if (!dictionary["QT_INSTALL_PLUGINS"].size())
-        dictionary["QT_INSTALL_PLUGINS"] = qipempty ? "" : dictionary["QT_INSTALL_PREFIX"] + "/plugins";
+        dictionary["QT_INSTALL_PLUGINS"] = qipempty ? "" : dictionary["QT_INSTALL_ARCHDATA"] + "/plugins";
     if (!dictionary["QT_INSTALL_IMPORTS"].size())
-        dictionary["QT_INSTALL_IMPORTS"] = qipempty ? "" : dictionary["QT_INSTALL_PREFIX"] + "/imports";
+        dictionary["QT_INSTALL_IMPORTS"] = qipempty ? "" : dictionary["QT_INSTALL_ARCHDATA"] + "/imports";
     if (!dictionary["QT_INSTALL_DATA"].size())
         dictionary["QT_INSTALL_DATA"] = qipempty ? "" : dictionary["QT_INSTALL_PREFIX"];
+    if (!dictionary["QT_INSTALL_DOCS"].size())
+        dictionary["QT_INSTALL_DOCS"] = qipempty ? "" : dictionary["QT_INSTALL_DATA"] + "/doc";
     if (!dictionary["QT_INSTALL_TRANSLATIONS"].size())
-        dictionary["QT_INSTALL_TRANSLATIONS"] = qipempty ? "" : dictionary["QT_INSTALL_PREFIX"] + "/translations";
+        dictionary["QT_INSTALL_TRANSLATIONS"] = qipempty ? "" : dictionary["QT_INSTALL_DATA"] + "/translations";
     if (!dictionary["QT_INSTALL_EXAMPLES"].size())
         dictionary["QT_INSTALL_EXAMPLES"] = qipempty ? "" : dictionary["QT_INSTALL_PREFIX"] + "/examples";
     if (!dictionary["QT_INSTALL_TESTS"].size())
@@ -3515,7 +3552,7 @@ void Configure::generateQConfigCpp()
     if (dictionary["QT_HOST_BINS"].isEmpty())
         dictionary["QT_HOST_BINS"] = haveHpx ? dictionary["QT_HOST_PREFIX"] + "/bin" : dictionary["QT_INSTALL_BINS"];
     if (dictionary["QT_HOST_DATA"].isEmpty())
-        dictionary["QT_HOST_DATA"] = haveHpx ? dictionary["QT_HOST_PREFIX"] : dictionary["QT_INSTALL_DATA"];
+        dictionary["QT_HOST_DATA"] = haveHpx ? dictionary["QT_HOST_PREFIX"] : dictionary["QT_INSTALL_ARCHDATA"];
 
     // Generate the new qconfig.cpp file
     QDir(buildPath).mkpath("src/corelib/global");
@@ -3543,6 +3580,7 @@ void Configure::generateQConfigCpp()
                   << "    \"qt_binspath=" << formatPath(dictionary["QT_INSTALL_BINS"]) << "\","  << endl
                   << "    \"qt_plugpath=" << formatPath(dictionary["QT_INSTALL_PLUGINS"]) << "\","  << endl
                   << "    \"qt_impspath=" << formatPath(dictionary["QT_INSTALL_IMPORTS"]) << "\","  << endl
+                  << "    \"qt_adatpath=" << formatPath(dictionary["QT_INSTALL_ARCHDATA"]) << "\","  << endl
                   << "    \"qt_datapath=" << formatPath(dictionary["QT_INSTALL_DATA"]) << "\","  << endl
                   << "    \"qt_trnspath=" << formatPath(dictionary["QT_INSTALL_TRANSLATIONS"]) << "\"," << endl
                   << "    \"qt_xmplpath=" << formatPath(dictionary["QT_INSTALL_EXAMPLES"]) << "\","  << endl
