@@ -40,7 +40,7 @@
 ##
 #############################################################################
 
-# langugae_list and country_list reflect the current values of enums in qlocale.h
+# language_list and country_list reflect the current values of enums in qlocale.h
 # If new xml language files are available in CLDR, these languages and countries
 # need to be *appended* to this list.
 
@@ -126,7 +126,7 @@ language_list = {
     78 : [ "Maltese",             "mt" ],
     79 : [ "Maori",               "mi" ],
     80 : [ "Marathi",             "mr" ],
-    81 : [ "Moldavian",           "mo" ],
+    81 : [ "Moldavian",           "mo" ], # deprecated (alias to "ro_MD")
     82 : [ "Mongolian",           "mn" ],
     83 : [ "Nauru",       "na" ],
     84 : [ "Nepali",              "ne" ],
@@ -146,7 +146,7 @@ language_list = {
     98 : [ "Sangho",              "sg" ],
     99 : [ "Sanskrit",            "sa" ],
     100 : [ "Serbian",            "sr" ],
-    101 : [ "SerboCroatian",      "sh" ],
+    101 : [ "SerboCroatian",      "sh" ], # legacy (alias to "sr_Latn")
     102 : [ "Sesotho",            "st" ],
     103 : [ "Setswana",           "tn" ],
     104 : [ "Shona",              "sn" ],
@@ -160,7 +160,7 @@ language_list = {
     112 : [ "Sundanese",          "su" ],
     113 : [ "Swahili",            "sw" ],
     114 : [ "Swedish",            "sv" ],
-    115 : [ "Tagalog",            "tl" ],
+    115 : [ "Tagalog",            "tl" ], # legacy (alias to "fil")
     116 : [ "Tajik",              "tg" ],
     117 : [ "Tamil",              "ta" ],
     118 : [ "Tatar",              "tt" ],
@@ -172,7 +172,7 @@ language_list = {
     124 : [ "Tsonga",             "ts" ],
     125 : [ "Turkish",            "tr" ],
     126 : [ "Turkmen",            "tk" ],
-    127 : [ "Twi",                "tw" ],
+    127 : [ "Twi",                "tw" ], # should be an alias to Akan
     128 : [ "Uigur",              "ug" ],
     129 : [ "Ukrainian",          "uk" ],
     130 : [ "Urdu",               "ur" ],
@@ -259,11 +259,12 @@ language_list = {
     211 : [ "Chiga",              "cgg" ],
     212 : [ "Central Morocco Tamazight", "tzm" ],
     213 : [ "Koyraboro Senni",    "ses" ],
-    214 : [ "Shambala",           "ksb" ]
+    214 : [ "Shambala",           "ksb" ],
+    215 : [ "Bodo",               "brx" ]
 }
 
 country_list = {
-    0 : [ "AnyCountry",                                 "  "  ],
+    0 : [ "AnyCountry",                                 "ZZ"  ],
     1 : [ "Afghanistan",                                "AF"  ],
     2 : [ "Albania",                                    "AL"  ],
     3 : [ "Algeria",                                    "DZ"  ],
@@ -513,7 +514,7 @@ country_list = {
 }
 
 script_list = {
-    0   : [ "AnyScript",         "" ],
+    0   : [ "AnyScript",         "Zzzz" ],
     1   : [ "Arabic",            "Arab" ],
     2   : [ "Cyrillic",          "Cyrl" ],
     3   : [ "Deseret",           "Dsrt" ],
@@ -522,22 +523,53 @@ script_list = {
     6   : [ "Traditional Han",   "Hant" ],
     7   : [ "Latin",             "Latn" ],
     8   : [ "Mongolian",         "Mong" ],
-    9   : [ "Tifinagh",          "Tfng" ]
+    9   : [ "Tifinagh",          "Tfng" ],
+    10  : [ "Armenian",          "Armn" ],
+    11  : [ "Bengali",           "Beng" ],
+    12  : [ "Cherokee",          "Cher" ],
+    13  : [ "Devanagari",        "Deva" ],
+    14  : [ "Ethiopic",          "Ethi" ],
+    15  : [ "Georgian",          "Geor" ],
+    16  : [ "Greek",             "Grek" ],
+    17  : [ "Gujarati",          "Gujr" ],
+    18  : [ "Hebrew",            "Hebr" ],
+    19  : [ "Japanese",          "Jpan" ],
+    20  : [ "Khmer",             "Khmr" ],
+    21  : [ "Kannada",           "Knda" ],
+    22  : [ "Korean",            "Kore" ],
+    23  : [ "Lao",               "Laoo" ],
+    24  : [ "Malayalam",         "Mlym" ],
+    25  : [ "Myanmar",           "Mymr" ],
+    26  : [ "Oriya",             "Orya" ],
+    27  : [ "Tamil",             "Taml" ],
+    28  : [ "Telugu",            "Telu" ],
+    29  : [ "Thaana",            "Thaa" ],
+    30  : [ "Thai",              "Thai" ],
+    31  : [ "Tibetan",           "Tibt" ],
+    32  : [ "Sinhala",           "Sinh" ],
+    33  : [ "Syriac",            "Syri" ],
+    34  : [ "Yi",                "Yiii" ]
 }
 
 def countryCodeToId(code):
+    if not code:
+        return 0
     for country_id in country_list:
         if country_list[country_id][1] == code:
             return country_id
     return -1
 
 def languageCodeToId(code):
+    if not code:
+        return 0
     for language_id in language_list:
         if language_list[language_id][1] == code:
             return language_id
     return -1
 
 def scriptCodeToId(code):
+    if not code:
+        return 0
     for script_id in script_list:
         if script_list[script_id][1] == code:
             return script_id
