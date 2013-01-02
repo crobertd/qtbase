@@ -144,6 +144,34 @@ QMakeProperty::remove(const QString &var)
     settings->remove("2.01a/" + var); // Backwards compat
 }
 
+#if defined(__CYGWIN__)
+static const char* cygpath(const char *path)
+{
+    char *cygRoot = getenv("CYGROOT");
+
+    if (!cygRoot) return path;
+
+    char buff[256];
+    static QByteArray cygpath;
+    cygpath.clear();
+    if (*path != '/' && *path != '\\')
+        cygpath = path;
+    else if (path && *path) {
+        cygpath = cygRoot;
+        cygpath += path;
+        cygpath.replace('/', '\\');
+    }
+
+    // Strip leading and trailing whitespace
+    cygpath = cygpath.simplified();
+
+    return cygpath.constData();
+}
+#define formatPath(path) cygpath(path)
+#else
+#define formatPath(path) (path)
+#endif
+
 bool
 QMakeProperty::exec()
 {
@@ -171,11 +199,11 @@ QMakeProperty::exec()
                 ProString val = value(ProKey(prop));
                 ProString pval = value(ProKey(prop + "/raw"));
                 ProString gval = value(ProKey(prop + "/get"));
-                fprintf(stdout, "%s:%s\n", prop.toLatin1().constData(), val.toLatin1().constData());
+                fprintf(stdout, "%s:%s\n", prop.toLatin1().constData(), formatPath(val.toLatin1().constData()));
                 if (!pval.isEmpty() && pval != val)
-                    fprintf(stdout, "%s/raw:%s\n", prop.toLatin1().constData(), pval.toLatin1().constData());
+                    fprintf(stdout, "%s/raw:%s\n", prop.toLatin1().constData(), formatPath(pval.toLatin1().constData()));
                 if (!gval.isEmpty() && gval != (pval.isEmpty() ? val : pval))
-                    fprintf(stdout, "%s/get:%s\n", prop.toLatin1().constData(), gval.toLatin1().constData());
+                    fprintf(stdout, "%s/get:%s\n", prop.toLatin1().constData(), formatPath(gval.toLatin1().constData()));
             }
             return true;
         }
@@ -188,7 +216,7 @@ QMakeProperty::exec()
                 ret = false;
                 fprintf(stdout, "**Unknown**\n");
             } else {
-                fprintf(stdout, "%s\n", value(pkey).toLatin1().constData());
+                fprintf(stdout, "%s\n", formatPath(value(pkey).toLatin1().constData()));
             }
         }
     } else if(Option::qmake_mode == Option::QMAKE_SET_PROPERTY) {
