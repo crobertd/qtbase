@@ -1561,6 +1561,29 @@ void QXcbWindow::handleMouseEvent(xcb_button_t detail, uint16_t state, xcb_times
     QWindowSystemInterface::handleMouseEvent(window(), time, local, global, buttons, modifiers);
 }
 
+class EnterEventChecker
+{
+public:
+    bool checkEvent(xcb_generic_event_t *event)
+    {
+        if (!event)
+            return false;
+        if ((event->response_type & ~0x80) != XCB_ENTER_NOTIFY)
+            return false;
+
+        xcb_enter_notify_event_t *enter = (xcb_enter_notify_event_t *)event;
+
+        if ((enter->mode != XCB_NOTIFY_MODE_NORMAL && enter->mode != XCB_NOTIFY_MODE_UNGRAB)
+            || enter->detail == XCB_NOTIFY_DETAIL_VIRTUAL
+            || enter->detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL)
+        {
+            return false;
+        }
+
+        return true;
+    }
+};
+
 void QXcbWindow::handleEnterNotifyEvent(const xcb_enter_notify_event_t *event)
 {
     connection()->setTime(event->time);
@@ -1582,12 +1605,26 @@ void QXcbWindow::handleLeaveNotifyEvent(const xcb_leave_notify_event_t *event)
     connection()->setTime(event->time);
 
     if ((event->mode != XCB_NOTIFY_MODE_NORMAL && event->mode != XCB_NOTIFY_MODE_UNGRAB)
-        || event->detail == XCB_NOTIFY_DETAIL_INFERIOR)
+        || event->detail == XCB_NOTIFY_DETAIL_VIRTUAL
+        || event->detail == XCB_NOTIFY_DETAIL_NONLINEAR_VIRTUAL)
     {
         return;
     }
 
-    QWindowSystemInterface::handleLeaveEvent(window());
+    EnterEventChecker checker;
+    xcb_enter_notify_event_t *enter = (xcb_enter_notify_event_t *)connection()->checkEvent(checker);
+    QXcbWindow *enterWindow = enter ? connection()->platformWindowFromId(enter->event) : 0;
+
+    if (enterWindow) {
+        QPoint local(enter->event_x, enter->event_y);
+        QPoint global(enter->root_x, enter->root_y);
+
+        QWindowSystemInterface::handleEnterLeaveEvent(enterWindow->window(), window(), local, global);
+    } else {
+        QWindowSystemInterface::handleLeaveEvent(window());
+    }
+
+    free(enter);
 }
 
 void QXcbWindow::handlePropertyNotifyEvent(const xcb_property_notify_event_t *event)
@@ -1747,6 +1784,23 @@ static inline xcb_rectangle_t qRectToXCBRectangle(const QRect &r)
     result.width = qMin((int)USHRT_MAX, r.width());
     result.height = qMin((int)USHRT_MAX, r.height());
     return result;
+}
+
+void QXcbWindow::setOpacity(qreal level)
+{
+    if (!m_window)
+        return;
+
+    quint32 value = qRound64(qBound(qreal(0), level, qreal(1)) * 0xffffffff);
+
+    Q_XCB_CALL(xcb_change_property(xcb_connection(),
+                                   XCB_PROP_MODE_REPLACE,
+                                   m_window,
+                                   atom(QXcbAtom::_NET_WM_WINDOW_OPACITY),
+                                   XCB_ATOM_CARDINAL,
+                                   32,
+                                   1,
+                                   (uchar *)&value));
 }
 
 void QXcbWindow::setMask(const QRegion &region)

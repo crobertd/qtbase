@@ -11,7 +11,6 @@ SUBDIRS       = \
 !contains(QT_CONFIG, no-widgets) {
     SUBDIRS += widgets \
                ipc \
-               linguist \
                sql \
                tools \
                touch \
@@ -25,7 +24,8 @@ contains(QT_CONFIG, opengl):!contains(QT_CONFIG, no-widgets):SUBDIRS += opengl
 contains(QT_CONFIG, dbus): SUBDIRS += dbus
 contains(QT_CONFIG, concurrent): SUBDIRS += qtconcurrent
 
-# install
-sources.files = README *.pro
-sources.path = $$[QT_INSTALL_EXAMPLES]
-INSTALLS += sources
+aggregate.files = aggregate/examples.pro
+aggregate.path = $$[QT_INSTALL_EXAMPLES]
+readme.files = README
+readme.path = $$[QT_INSTALL_EXAMPLES]
+INSTALLS += aggregate readme

@@ -89,23 +89,16 @@ QT_BEGIN_NAMESPACE
     buffers to support double and triple buffering, as well as depth and stencil
     buffers. To release a window's memory resources, call the destroy() function.
 
-    \section1 Window and content orientation
+    \section1 Content orientation
 
-    QWindow has reportContentOrientationChange() and
-    requestWindowOrientation() that can be used to specify the
-    layout of the window contents in relation to the screen. The
-    window orientation determines the actual buffer layout of the
-    window, and the windowing system uses this value to rotate the
-    window before it ends up on the display, and to ensure that input
-    coordinates are in the correct coordinate space relative to the
-    application.
-
-    On the other hand, the content orientation is simply a hint to the
-    windowing system about which orientation the window contents are in.
-    It's useful when you wish to keep the same buffer layout, but rotate
-    the contents instead, especially when doing rotation animations
-    between different orientations. The windowing system might use this
-    value to determine the layout of system popups or dialogs.
+    QWindow has reportContentOrientationChange() that can be used to specify
+    the layout of the window contents in relation to the screen. The content
+    orientation is simply a hint to the windowing system about which
+    orientation the window contents are in.  It's useful when you wish to keep
+    the same window size, but rotate the contents instead, especially when
+    doing rotation animations between different orientations. The windowing
+    system might use this value to determine the layout of system popups or
+    dialogs.
 
     \section1 Visibility and Windowing system exposure.
 
@@ -743,8 +736,6 @@ bool QWindow::isActive() const
     to compute the necessary transform.
 
     The default value is Qt::PrimaryOrientation
-
-    \sa requestOrientation(), QScreen::orientation()
 */
 void QWindow::reportContentOrientationChange(Qt::ScreenOrientation orientation)
 {
@@ -766,43 +757,21 @@ Qt::ScreenOrientation QWindow::contentOrientation() const
 }
 
 /*!
-  Requests the given window \a orientation.
+    Returns the ratio between physical pixels and device-independent pixels
+    for the window. This value is dependent on the screen the window is on,
+    and may change when the window is moved.
 
-  The window \a orientation specifies how the window should be rotated
-  by the window manager in order to be displayed. Input events will
-  be correctly mapped to the given \a orientation.
+    Common values are 1.0 on normal displays and 2.0 on Apple "retina" displays.
 
-  The return value is false if the system doesn't support the given
-  \a orientation (for example when requesting a portrait orientation
-  on a device that only handles landscape buffers, typically a desktop
-  system).
-
-  If the return value is false, call \l orientation() to get the actual
-  supported orientation.
-
-  \sa orientation(), reportContentOrientationChange(), QScreen::orientation()
+    \sa QWindow::devicePixelRatio();
+    \sa QGuiApplicaiton::devicePixelRatio();
 */
-bool QWindow::requestOrientation(Qt::ScreenOrientation orientation)
-{
-    Q_D(QWindow);
-    if (!d->platformWindow)
-        create();
-    Q_ASSERT(d->platformWindow);
-    d->windowOrientation = d->platformWindow->requestWindowOrientation(orientation);
-    return d->windowOrientation == orientation;
-}
-
-/*!
-  Returns the actual window orientation.
-
-  The default value is Qt::PrimaryOrientation.
-
-  \sa requestOrientation()
-*/
-Qt::ScreenOrientation QWindow::orientation() const
+qreal QWindow::devicePixelRatio() const
 {
     Q_D(const QWindow);
-    return d->windowOrientation;
+    if (!d->platformWindow)
+        return 1.0;
+    return d->platformWindow->devicePixelRatio();
 }
 
 /*!
@@ -965,11 +934,59 @@ void QWindow::setMinimumSize(const QSize &size)
         emit minimumHeightChanged(d->minimumSize.height());
 }
 
+/*!
+    \property QWindow::x
+    \brief the x position of the window's geometry
+*/
+void QWindow::setX(int arg)
+{
+    if (x() != arg)
+        setGeometry(QRect(arg, y(), width(), height()));
+}
+
+/*!
+    \property QWindow::y
+    \brief the y position of the window's geometry
+*/
+void QWindow::setY(int arg)
+{
+    if (y() != arg)
+        setGeometry(QRect(x(), arg, width(), height()));
+}
+
+/*!
+    \property QWindow::width
+    \brief the width of the window's geometry
+*/
+void QWindow::setWidth(int arg)
+{
+    if (width() != arg)
+        setGeometry(QRect(x(), y(), arg, height()));
+}
+
+/*!
+    \property QWindow::height
+    \brief the height of the window's geometry
+*/
+void QWindow::setHeight(int arg)
+{
+    if (height() != arg)
+        setGeometry(QRect(x(), y(), width(), arg));
+}
+
+/*!
+    \property QWindow::minimumWidth
+    \brief the minimum width of the window's geometry
+*/
 void QWindow::setMinimumWidth(int w)
 {
     setMinimumSize(QSize(w, minimumHeight()));
 }
 
+/*!
+    \property QWindow::minimumHeight
+    \brief the minimum height of the window's geometry
+*/
 void QWindow::setMinimumHeight(int h)
 {
     setMinimumSize(QSize(minimumWidth(), h));
@@ -998,11 +1015,19 @@ void QWindow::setMaximumSize(const QSize &size)
         emit maximumHeightChanged(d->maximumSize.height());
 }
 
+/*!
+    \property QWindow::maximumWidth
+    \brief the maximum width of the window's geometry
+*/
 void QWindow::setMaximumWidth(int w)
 {
     setMaximumSize(QSize(w, maximumHeight()));
 }
 
+/*!
+    \property QWindow::maximumHeight
+    \brief the maximum height of the window's geometry
+*/
 void QWindow::setMaximumHeight(int h)
 {
     setMaximumSize(QSize(maximumWidth(), h));
@@ -1051,13 +1076,15 @@ void QWindow::setSizeIncrement(const QSize &size)
 }
 
 /*!
-    \fn void QWindow::setGeometry(int posx, int posy, int w, int h)
-
     Sets the geometry of the window, excluding its window frame, to a
     rectangle constructed from \a posx, \a posy, \a w and \a h.
 
     \sa geometry()
 */
+void QWindow::setGeometry(int posx, int posy, int w, int h)
+{
+    setGeometry(QRect(posx, posy, w, h));
+}
 
 /*!
     \brief Sets the geometry of the window, excluding its window frame, to \a rect.
@@ -1087,46 +1114,6 @@ void QWindow::setGeometry(const QRect &rect)
     if (rect.height() != oldRect.height())
         emit heightChanged(rect.height());
 }
-
-/*!
-    \property QWindow::x
-    \brief the x position of the window's geometry
-*/
-
-/*!
-    \property QWindow::y
-    \brief the y position of the window's geometry
-*/
-
-/*!
-    \property QWindow::width
-    \brief the width of the window's geometry
-*/
-
-/*!
-    \property QWindow::height
-    \brief the height of the window's geometry
-*/
-
-/*!
-    \property QWindow::minimumWidth
-    \brief the minimum width of the window's geometry
-*/
-
-/*!
-    \property QWindow::minimumHeight
-    \brief the minimum height of the window's geometry
-*/
-
-/*!
-    \property QWindow::maximumWidth
-    \brief the maximum width of the window's geometry
-*/
-
-/*!
-    \property QWindow::maximumHeight
-    \brief the maximum height of the window's geometry
-*/
 
 /*!
     Returns the geometry of the window, excluding its window frame.
@@ -1176,7 +1163,7 @@ QRect QWindow::frameGeometry() const
 
     \sa geometry(), frameGeometry()
 */
-QPoint QWindow::framePos() const
+QPoint QWindow::framePosition() const
 {
     Q_D(const QWindow);
     if (d->platformWindow) {
@@ -1191,7 +1178,7 @@ QPoint QWindow::framePos() const
 
     \sa setGeometry(), frameGeometry()
 */
-void QWindow::setFramePos(const QPoint &point)
+void QWindow::setFramePosition(const QPoint &point)
 {
     Q_D(QWindow);
     d->positionPolicy = QWindowPrivate::WindowFrameInclusive;
@@ -1203,18 +1190,24 @@ void QWindow::setFramePos(const QPoint &point)
 }
 
 /*!
-    \fn void QWindow::setPosition(const QPoint &pt)
     \brief set the position of the window on the desktop to \a pt
 
     \sa position()
 */
+void QWindow::setPosition(const QPoint &pt)
+{
+    setGeometry(QRect(pt, size()));
+}
 
 /*!
-    \fn void QWindow::setPosition(int posx, int posy)
     \brief set the position of the window on the desktop to \a posx, \a posy
 
     \sa position()
 */
+void QWindow::setPosition(int posx, int posy)
+{
+    setPosition(QPoint(posx, posy));
+}
 
 /*!
     \fn QPoint QWindow::position() const
@@ -1231,13 +1224,15 @@ void QWindow::setFramePos(const QPoint &point)
 */
 
 /*!
-    \fn void QWindow::resize(int w, int h)
-
     set the size of the window, excluding any window frame, to a QSize
     constructed from width \a w and height \a h
 
     \sa size(), geometry()
 */
+void QWindow::resize(int w, int h)
+{
+    resize(QSize(w, h));
+}
 
 /*!
     \brief set the size of the window, excluding any window frame, to \a newSize
@@ -1388,8 +1383,16 @@ void QWindow::setScreen(QScreen *newScreen)
 void QWindow::screenDestroyed(QObject *object)
 {
     Q_D(QWindow);
-    if (object == static_cast<QObject *>(d->screen))
+    if (object == static_cast<QObject *>(d->screen)) {
+        const bool wasVisible = isVisible();
         setScreen(0);
+        // destroy() might have hidden our window, show it again.
+        // This might not be the best behavior if the new screen isn't a virtual sibling
+        // of the old one. This can be removed once platform plugins have the power to
+        // update the QScreen of its QWindows itself.
+        if (wasVisible && d->platformWindow)
+            setVisible(true);
+    }
 }
 
 /*!
@@ -1707,6 +1710,7 @@ bool QWindow::event(QEvent *ev)
     case QEvent::WindowStateChange: {
         Q_D(QWindow);
         emit windowStateChanged(d->windowState);
+        break;
     }
 
 #ifndef QT_NO_TABLETEVENT
