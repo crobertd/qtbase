@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -69,7 +69,7 @@ class QThreadData;
 class QObjectConnectionListVector;
 namespace QtSharedPointer { struct ExternalRefCountData; }
 
-/* for QtTestLib */
+/* for Qt Test */
 struct QSignalSpyCallbackSet
 {
     typedef void (*BeginCallback)(QObject *caller, int signal_or_method_index, void **argv);

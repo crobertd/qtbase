@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -1640,8 +1640,8 @@ QString QIODevice::errorString() const
     all the requested information was read and therefore does not retry reading
     if there was a problem.
 
-    This function will be called with maxSize 0 when the device is
-    buffered and the buffer was emptied by a call to read().
+    This function might be called with a maxSize of 0, which can be used to
+    perform post-reading operations.
 
     \sa read(), readLine(), writeData()
 */

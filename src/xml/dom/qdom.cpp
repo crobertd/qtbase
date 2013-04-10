@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtXml module of the Qt Toolkit.
@@ -261,7 +261,7 @@ public:
     /**
      * If true, then the node will redirect insert/remove calls
      * to its parent by calling QDomNodePrivate::appendChild or removeChild.
-     * In addition the map wont increase or decrease the reference count
+     * In addition the map won't increase or decrease the reference count
      * of the nodes it contains.
      *
      * By default this value is false and the map will handle reference counting

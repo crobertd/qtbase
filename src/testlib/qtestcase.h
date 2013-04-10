@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -249,7 +249,7 @@ namespace QTest
     Q_TESTLIB_EXPORT bool compare_string_helper(const char *t1, const char *t2, const char *actual,
                                       const char *expected, const char *file, int line);
 
-#ifndef qdoc
+#ifndef Q_QDOC
     QTEST_COMPARE_DECL(short)
     QTEST_COMPARE_DECL(ushort)
     QTEST_COMPARE_DECL(int)

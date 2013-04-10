@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -25,7 +25,7 @@
 **
 ****************************************************************************/
 /*!
-    \page qttestlib-index.html
+    \page qttest-index.html
     \title Qt Test
     \brief Provides classes for unit testing Qt applications and libraries.
 

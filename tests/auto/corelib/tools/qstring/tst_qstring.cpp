@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -67,7 +67,6 @@
 #include <locale.h>
 #include <qhash.h>
 
-Q_DECLARE_METATYPE(qlonglong)
 
 #define CREATE_REF(string)                                              \
     const QString padded = QString::fromLatin1(" %1 ").arg(string);     \
@@ -157,6 +156,7 @@ private slots:
     void count();
     void lastIndexOf_data();
     void lastIndexOf();
+    void lastIndexOfInvalidRegex();
     void indexOf_data();
     void indexOf();
     void indexOf2_data();
@@ -315,9 +315,6 @@ QString verifyZeroTermination(const QString &str)
     /**/
 
 typedef QList<int> IntList;
-
-Q_DECLARE_METATYPE(QList<QVariant>)
-Q_DECLARE_METATYPE(IntList)
 
 // This next bit is needed for the NAN and INF in string -> number conversion tests
 #include <float.h>
@@ -637,6 +634,7 @@ void tst_QString::replace_regexp_data()
                                << QString("a9a8a7a6a5nmlkjii0hh0gg0ff0ee0dd0cc0bb0a");
     QTest::newRow("backref10") << QString("abc") << QString("((((((((((((((abc))))))))))))))")
                                << QString("\\0\\01\\011") << QString("\\0\\01\\011");
+    QTest::newRow("invalid") << QString("") << QString("invalid regex\\") << QString("") << QString("");
 }
 
 void tst_QString::utf8_data()
@@ -1383,6 +1381,12 @@ void tst_QString::lastIndexOf()
     }
 }
 
+void tst_QString::lastIndexOfInvalidRegex()
+{
+    QTest::ignoreMessage(QtWarningMsg, "QString::lastIndexOf: invalid QRegularExpression object");
+    QCOMPARE(QString("").lastIndexOf(QRegularExpression("invalid regex\\"), 0), -1);
+}
+
 void tst_QString::count()
 {
     QString a;
@@ -1400,7 +1404,8 @@ void tst_QString::count()
     QCOMPARE(a.count(QRegExp("[G][HE]")),2);
     QCOMPARE(a.count(QRegularExpression("[FG][HI]")), 1);
     QCOMPARE(a.count(QRegularExpression("[G][HE]")), 2);
-
+    QTest::ignoreMessage(QtWarningMsg, "QString::count: invalid QRegularExpression object");
+    QCOMPARE(a.count(QRegularExpression("invalid regex\\")), 0);
 
     CREATE_REF(QLatin1String("FG"));
     QCOMPARE(a.count(ref),2);
@@ -1436,6 +1441,8 @@ void tst_QString::contains()
     QStringRef emptyRef(&a, 0, 0);
     QVERIFY(a.contains(emptyRef, Qt::CaseInsensitive));
 
+    QTest::ignoreMessage(QtWarningMsg, "QString::contains: invalid QRegularExpression object");
+    QVERIFY(!a.contains(QRegularExpression("invalid regex\\")));
 }
 
 
@@ -2346,7 +2353,10 @@ void tst_QString::replace_regexp()
     s2.replace( QRegExp(regexp), after );
     QTEST( s2, "result" );
     s2 = string;
-    s2.replace( QRegularExpression(regexp), after );
+    QRegularExpression regularExpression(regexp);
+    if (!regularExpression.isValid())
+        QTest::ignoreMessage(QtWarningMsg, "QString::replace: invalid QRegularExpression object");
+    s2.replace( regularExpression, after );
     QTEST( s2, "result" );
 }
 
@@ -2362,7 +2372,7 @@ void tst_QString::remove_uint_uint()
         s1.remove( (uint) index, (uint) len );
         QTEST( s1, "result" );
     } else
-        QCOMPARE( 0, 0 ); // shut QtTest
+        QCOMPARE( 0, 0 ); // shut Qt Test
 }
 
 void tst_QString::remove_string()
@@ -2401,7 +2411,7 @@ void tst_QString::remove_string()
         s5.replace( QRegExp(before, cs, QRegExp::FixedString), after );
         QTEST( s5, "result" );
     } else {
-        QCOMPARE( 0, 0 ); // shut QtTest
+        QCOMPARE( 0, 0 ); // shut Qt Test
     }
 }
 
@@ -2420,7 +2430,7 @@ void tst_QString::remove_regexp()
         s2.remove( QRegularExpression(regexp) );
         QTEST( s2, "result" );
     } else {
-        QCOMPARE( 0, 0 ); // shut QtTest
+        QCOMPARE( 0, 0 ); // shut Qt Test
     }
 }
 
@@ -3731,7 +3741,7 @@ void tst_QString::fromLatin1Roundtrip()
     QFETCH(QByteArray, latin1);
     QFETCH(QString, unicode);
 
-    // QtTest safety check:
+    // Qt Test safety check:
     QCOMPARE(latin1.isNull(), unicode.isNull());
     QCOMPARE(latin1.isEmpty(), unicode.isEmpty());
     QCOMPARE(latin1.length(), unicode.length());
@@ -3786,7 +3796,7 @@ void tst_QString::toLatin1Roundtrip()
     QFETCH(QString, unicodesrc);
     QFETCH(QString, unicodedst);
 
-    // QtTest safety check:
+    // Qt Test safety check:
     QCOMPARE(latin1.isNull(), unicodesrc.isNull());
     QCOMPARE(latin1.isEmpty(), unicodesrc.isEmpty());
     QCOMPARE(latin1.length(), unicodesrc.length());
@@ -3821,7 +3831,7 @@ void tst_QString::stringRef_toLatin1Roundtrip()
     QFETCH(QString, unicodesrc);
     QFETCH(QString, unicodedst);
 
-    // QtTest safety check:
+    // Qt Test safety check:
     QCOMPARE(latin1.isNull(), unicodesrc.isNull());
     QCOMPARE(latin1.isEmpty(), unicodesrc.isEmpty());
     QCOMPARE(latin1.length(), unicodesrc.length());
@@ -3887,8 +3897,8 @@ void tst_QString::fromAscii()
 void tst_QString::arg()
 {
 /*
-    Warning: If any of these test fails, the warning given by QtTest
-    is all messed up, because QtTest itself uses QString::arg().
+    Warning: If any of these test fails, the warning given by Qt Test
+    is all messed up, because Qt Test itself uses QString::arg().
 */
 
     QLocale::setDefault(QString("de_DE"));

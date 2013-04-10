@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -56,7 +56,7 @@
 
     \snippet fortuneserver/server.cpp 2
 
-    Our server generates a list of random fortunes that is can send to
+    Our server generates a list of random fortunes that it can send to
     connecting clients.
 
     \snippet fortuneserver/server.cpp 3

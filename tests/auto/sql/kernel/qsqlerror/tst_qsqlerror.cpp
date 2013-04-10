@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -102,7 +102,7 @@ void tst_QSqlError::construction()
    QCOMPARE(obj1.databaseText(), QString("databasetext"));
    QCOMPARE(obj1.type(), QSqlError::UnknownError);
    QCOMPARE(obj1.number(), 123);
-   obj1.isValid();
+   QVERIFY(obj1.isValid());
 
    QSqlError obj2(obj1);
    QCOMPARE(obj2.driverText(), obj1.driverText());

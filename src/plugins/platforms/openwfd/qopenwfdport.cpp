@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -125,7 +125,7 @@ void QOpenWFDPort::attach()
     }
 
     if (mPipeline == WFD_INVALID_HANDLE) {
-        qWarning("Failed to create pipeline and cant bind it to port");
+        qWarning("Failed to create pipeline and can't bind it to port");
     }
 
     WFDint geomerty[] = { 0, 0, mPixelSize.width(), mPixelSize.height() };

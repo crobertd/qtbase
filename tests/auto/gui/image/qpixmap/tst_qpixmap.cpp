@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -166,6 +166,9 @@ private slots:
     void loadAsBitmapOrPixmap();
 
     void scaled_QTBUG19157();
+    void detachOnLoad_QTBUG29639();
+
+    void copyOnNonAlignedBoundary();
 };
 
 static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
@@ -200,10 +203,6 @@ static bool lenientCompare(const QPixmap &actual, const QPixmap &expected)
     return true;
 }
 
-Q_DECLARE_METATYPE(QImage)
-Q_DECLARE_METATYPE(QPixmap)
-Q_DECLARE_METATYPE(QMatrix)
-Q_DECLARE_METATYPE(QBitmap)
 
 tst_QPixmap::tst_QPixmap()
 {
@@ -1490,6 +1489,28 @@ void tst_QPixmap::scaled_QTBUG19157()
     QPixmap foo(5000, 1);
     foo = foo.scaled(1024, 1024, Qt::KeepAspectRatio);
     QVERIFY(!foo.isNull());
+}
+
+void tst_QPixmap::detachOnLoad_QTBUG29639()
+{
+    const QString prefix = QFINDTESTDATA("convertFromImage");
+
+    QPixmap a;
+    a.load(prefix + "/task31722_0/img1.png");
+    a.load(prefix + "/task31722_0/img2.png");
+
+    QPixmap b;
+    b.load(prefix + "/task31722_0/img1.png");
+
+    QVERIFY(a.toImage() != b.toImage());
+}
+
+void tst_QPixmap::copyOnNonAlignedBoundary()
+{
+    QImage img(8, 2, QImage::Format_RGB16);
+
+    QPixmap pm1 = QPixmap::fromImage(img, Qt::NoFormatConversion);
+    QPixmap pm2 = pm1.copy(QRect(5, 0, 3, 2)); // When copying second line: 2 bytes too many are read which might cause an access violation.
 }
 
 QTEST_MAIN(tst_QPixmap)

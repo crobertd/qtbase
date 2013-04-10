@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -1283,7 +1283,7 @@ bool QTextCursor::movePosition(MoveOperation op, MoveMode mode, int n)
   Returns true if the cursor does visual navigation; otherwise
   returns false.
 
-  Visual navigation means skipping over hidden text pragraphs. The
+  Visual navigation means skipping over hidden text paragraphs. The
   default is false.
 
   \sa setVisualNavigation(), movePosition()
@@ -1298,7 +1298,7 @@ bool QTextCursor::visualNavigation() const
 
   Sets visual navigation to \a b.
 
-  Visual navigation means skipping over hidden text pragraphs. The
+  Visual navigation means skipping over hidden text paragraphs. The
   default is false.
 
   \sa visualNavigation(), movePosition()

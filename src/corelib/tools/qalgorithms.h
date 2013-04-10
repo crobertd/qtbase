@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -140,7 +140,7 @@ inline void qCount(const Container &container, const T &value, Size &n)
     qCount(container.constBegin(), container.constEnd(), value, n);
 }
 
-#ifdef qdoc
+#ifdef Q_QDOC
 template <typename T>
 LessThan qLess()
 {

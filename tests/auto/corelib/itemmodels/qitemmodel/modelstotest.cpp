@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -67,7 +67,7 @@ public:
     void cleanupTestArea(QAbstractItemModel *model);
 
     enum Read {
-        ReadOnly, // wont perform remove(), insert(), and setData()
+        ReadOnly, // won't perform remove(), insert(), and setData()
         ReadWrite
     };
     enum Contains {

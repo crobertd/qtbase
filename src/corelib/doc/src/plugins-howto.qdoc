@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -69,7 +69,7 @@
     Since the higher-level API is built on top of the lower-level API,
     some issues are common to both.
 
-    If you want to provide plugins for use with Qt Designer, see the QtDesigner
+    If you want to provide plugins for use with Qt Designer, see the Qt Designer
     module documentation.
 
     Topics:
@@ -184,12 +184,12 @@
 
     For example, here's the definition of an interface class:
 
-    \snippet tools/plugandpaint/interfaces.h 2
+    \snippet plugins/interfaces.h 2
 
     Here's the definition of a plugin class that implements that
     interface:
 
-    \snippet tools/plugandpaintplugins/extrafilters/extrafiltersplugin.h 0
+    \snippet plugins/extrafiltersplugin.h 0
 
     The \l{tools/plugandpaint}{Plug & Paint} example documentation
     explains this process in detail. See also \l{Creating Custom

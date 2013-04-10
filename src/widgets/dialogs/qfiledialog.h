@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -242,6 +242,7 @@ private:
     Q_PRIVATE_SLOT(d_func(), void _q_updateOkButton())
     Q_PRIVATE_SLOT(d_func(), void _q_currentChanged(const QModelIndex &index))
     Q_PRIVATE_SLOT(d_func(), void _q_enterDirectory(const QModelIndex &index))
+    Q_PRIVATE_SLOT(d_func(), void _q_nativeEnterDirectory(const QString&))
     Q_PRIVATE_SLOT(d_func(), void _q_goToDirectory(const QString &path))
     Q_PRIVATE_SLOT(d_func(), void _q_useNameFilter(int index))
     Q_PRIVATE_SLOT(d_func(), void _q_selectionChanged())

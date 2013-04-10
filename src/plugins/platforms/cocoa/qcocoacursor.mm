@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -49,6 +49,10 @@ QT_BEGIN_NAMESPACE
 
 QCocoaCursor::QCocoaCursor()
 {
+}
+
+QCocoaCursor::~QCocoaCursor()
+{
     // release cursors
     QHash<Qt::CursorShape, NSCursor *>::const_iterator i = m_cursors.constBegin();
     while (i != m_cursors.constEnd()) {
@@ -96,10 +100,15 @@ void QCocoaCursor::changeCursor(QCursor *cursor, QWindow *window)
         break;
     case Qt::DragLinkCursor:
         [[NSCursor dragLinkCursor] set];
+        break;
     default : {
         // No suitable OS cursor exist, use cursors provided
         // by Qt for the rest. Check for a cached cursor:
         NSCursor *cocoaCursor = m_cursors.value(cursor->shape());
+        if (cocoaCursor && cursor->shape() == Qt::BitmapCursor) {
+            [cocoaCursor release];
+            cocoaCursor = 0;
+        }
         if (cocoaCursor == 0) {
             cocoaCursor = createCursorData(cursor);
             if (cocoaCursor == 0) {

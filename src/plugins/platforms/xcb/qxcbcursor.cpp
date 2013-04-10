@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -482,7 +482,7 @@ xcb_cursor_t QXcbCursor::createFontCursor(int cshape)
                                 0xFFFF, 0xFFFF, 0xFFFF, 0, 0, 0);
     }
 
-    if (cursor && cshape >= 0 && cshape < Qt::LastCursor) {
+    if (cursor && cshape >= 0 && cshape < Qt::LastCursor && connection()->hasXFixes()) {
         const char *name = cursorNames[cshape];
         xcb_xfixes_set_cursor_name(conn, cursor, strlen(name), name);
     }
@@ -545,7 +545,7 @@ QPoint QXcbCursor::pos() const
 
 void QXcbCursor::setPos(const QPoint &pos)
 {
-    xcb_window_t root;
+    xcb_window_t root = 0;
     queryPointer(connection(), &root, 0);
     xcb_warp_pointer(xcb_connection(), XCB_NONE, root, 0, 0, 0, 0, pos.x(), pos.y());
     xcb_flush(xcb_connection());

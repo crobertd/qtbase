@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -45,9 +45,7 @@
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkCookie>
 
-Q_DECLARE_METATYPE(QList<QByteArray>)
 Q_DECLARE_METATYPE(QNetworkRequest::KnownHeaders)
-Q_DECLARE_METATYPE(QVariant)
 
 class tst_QNetworkRequest: public QObject
 {
@@ -104,7 +102,7 @@ void tst_QNetworkRequest::ctor_data()
 
     QTest::newRow("nothing") << QUrl();
     QTest::newRow("empty") << QUrl();
-    QTest::newRow("http") << QUrl("http://qt.nokia.com");
+    QTest::newRow("http") << QUrl("http://qt-project.org");
 }
 
 void tst_QNetworkRequest::ctor()

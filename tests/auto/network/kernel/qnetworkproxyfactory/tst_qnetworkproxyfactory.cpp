@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -73,7 +73,8 @@ public:
             return returnedList;
         }
         QList<QNetworkProxy> returnedList;
-        int requestCounter;
+
+        static int requestCounter;
     };
 
 private slots:
@@ -91,6 +92,8 @@ private:
     QString formatProxyName(const QNetworkProxy & proxy) const;
     QDebugProxyFactory *factory;
 };
+
+int tst_QNetworkProxyFactory::QDebugProxyFactory::requestCounter = 0;
 
 tst_QNetworkProxyFactory::tst_QNetworkProxyFactory()
 {
@@ -204,6 +207,7 @@ void tst_QNetworkProxyFactory::systemProxyForQuery_local()
 
     // set an arbitrary proxy
     QNetworkProxy::setApplicationProxy(QNetworkProxy(QNetworkProxy::HttpProxy, proxyHost, 80));
+    factory = 0;
 
     // localhost
     list = QNetworkProxyFactory::proxyForQuery(QNetworkProxyQuery(QUrl("http://localhost/")));
@@ -231,6 +235,7 @@ void tst_QNetworkProxyFactory::systemProxyForQuery_local()
 
     // disable proxy
     QNetworkProxy::setApplicationProxy(QNetworkProxy(QNetworkProxy::NoProxy));
+    factory = 0;
 
     // localhost
     list = QNetworkProxyFactory::proxyForQuery(QNetworkProxyQuery(QUrl("http://localhost/")));
@@ -268,7 +273,7 @@ void tst_QNetworkProxyFactory::fromConfigurations()
 {
     QNetworkConfigurationManager manager;
     QList<QNetworkProxy> proxies;
-    QUrl url(QLatin1String("http://qt.nokia.com"));
+    QUrl url(QLatin1String("http://qt-project.org"));
     //get from known configurations
     foreach (QNetworkConfiguration config, manager.allConfigurations()) {
         QNetworkProxyQuery query(config, url, QNetworkProxyQuery::UrlRequest);
@@ -315,7 +320,7 @@ void tst_QNetworkProxyFactory::inNetworkAccessManager_data()
     QNetworkConfigurationManager manager;
     //get from known configurations
     foreach (QNetworkConfiguration config, manager.allConfigurations()) {
-        QNetworkProxyQuery query(config, QUrl(QString("http://qt.nokia.com")), QNetworkProxyQuery::UrlRequest);
+        QNetworkProxyQuery query(config, QUrl(QString("http://qt-project.org")), QNetworkProxyQuery::UrlRequest);
         QList<QNetworkProxy> proxies = QNetworkProxyFactory::systemProxyForQuery(query);
         QTest::newRow(config.name().toUtf8()) << config << proxies;
     }
@@ -328,23 +333,24 @@ void tst_QNetworkProxyFactory::inNetworkAccessManager()
     QFETCH(QNetworkConfiguration, config);
     QFETCH(QList<QNetworkProxy>, proxies);
 
-    int count = factory->requestCounter;
+    int count = QDebugProxyFactory::requestCounter;
 
     QNetworkAccessManager manager;
     manager.setConfiguration(config);
 
     //using an internet server, because cellular APs won't have a route to the test server.
-    QNetworkRequest req(QUrl(QString("http://qt.nokia.com")));
+    QNetworkRequest req(QUrl(QString("http://qt-project.org")));
     QNetworkReply *reply = manager.get(req);
     connect(reply, SIGNAL(finished()), &QTestEventLoop::instance(), SLOT(exitLoop()));
     QTestEventLoop::instance().enterLoop(30);
     delete reply;
 
-    if (count == factory->requestCounter) {
+    if (count == QDebugProxyFactory::requestCounter) {
         //RND phones are preconfigured with several test access points which won't work without a matching SIM
         //If the network fails to start, QNAM won't ask the factory for proxies so we can't test.
         QSKIP("network configuration didn't start");
     }
+    QVERIFY(factory);
 
     qDebug() << "testing network configuration for" << config.name();
     foreach (QNetworkProxy proxy, factory->returnedList) {
@@ -377,7 +383,7 @@ public:
 //regression test for QTBUG-18799
 void tst_QNetworkProxyFactory::systemProxyForQueryCalledFromThread()
 {
-    QUrl url(QLatin1String("http://qt.nokia.com"));
+    QUrl url(QLatin1String("http://qt-project.org"));
     QNetworkProxyQuery query(url);
     QSPFQThread thread;
     thread.query = query;

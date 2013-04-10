@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -78,10 +78,12 @@ public:
 
     typedef void * (*NativeResourceForIntegrationFunction)();
     typedef void * (*NativeResourceForContextFunction)(QOpenGLContext *context);
+    typedef void * (*NativeResourceForScreenFunction)(QScreen *screen);
     typedef void * (*NativeResourceForWindowFunction)(QWindow *window);
     typedef void * (*NativeResourceForBackingStoreFunction)(QBackingStore *backingStore);
     virtual NativeResourceForIntegrationFunction nativeResourceFunctionForIntegration(const QByteArray &resource);
     virtual NativeResourceForContextFunction nativeResourceFunctionForContext(const QByteArray &resource);
+    virtual NativeResourceForScreenFunction nativeResourceFunctionForScreen(const QByteArray &resource);
     virtual NativeResourceForWindowFunction nativeResourceFunctionForWindow(const QByteArray &resource);
     virtual NativeResourceForBackingStoreFunction nativeResourceFunctionForBackingStore(const QByteArray &resource);
 

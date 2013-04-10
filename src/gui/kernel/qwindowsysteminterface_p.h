@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -302,10 +302,10 @@ public:
         TabletEvent(QWindow *w, ulong time, bool down, const QPointF &local, const QPointF &global,
                     int device, int pointerType, qreal pressure, int xTilt, int yTilt, qreal tpressure,
                     qreal rotation, int z, qint64 uid, Qt::KeyboardModifiers mods)
-            : InputEvent(w, time, Tablet, Qt::NoModifier),
+            : InputEvent(w, time, Tablet, mods),
               down(down), local(local), global(global), device(device), pointerType(pointerType),
               pressure(pressure), xTilt(xTilt), yTilt(yTilt), tangentialPressure(tpressure),
-              rotation(rotation), z(z), uid(uid), mods(mods) { }
+              rotation(rotation), z(z), uid(uid) { }
         bool down;
         QPointF local;
         QPointF global;
@@ -318,7 +318,6 @@ public:
         qreal rotation;
         int z;
         qint64 uid;
-        Qt::KeyboardModifiers mods;
     };
 
     class TabletEnterProximityEvent : public InputEvent {

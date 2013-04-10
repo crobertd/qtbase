@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -213,7 +213,7 @@ painter.drawPixmap(target, image, source);
 
 //! [17]
 QPainter painter(this);
-painter.drawText(rect, Qt::AlignCenter, tr("Qt by\nNokia"));
+painter.drawText(rect, Qt::AlignCenter, tr("Qt\nProject"));
 //! [17]
 
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtQml module of the Qt Toolkit.
@@ -75,6 +75,8 @@ class Engine;
 
 class QML_PARSER_EXPORT Parser: protected QQmlJSGrammar
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::QQmlJS::Parser)
+
 public:
     union Value {
       int ival;

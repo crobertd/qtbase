@@ -1,8 +1,7 @@
 /********************************************************************************
 ** Form generated from reading UI file 'chatmainwindow.ui'
 **
-** Created: Fri Sep 4 10:17:12 2009
-**      by: Qt User Interface Compiler version 4.6.0
+** Created by: Qt User Interface Compiler version 5.0.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
@@ -150,7 +149,7 @@ public:
 
     void retranslateUi(QMainWindow *ChatMainWindow)
     {
-        ChatMainWindow->setWindowTitle(QApplication::translate("ChatMainWindow", "QtDBus Chat", 0));
+        ChatMainWindow->setWindowTitle(QApplication::translate("ChatMainWindow", "Qt D-Bus Chat", 0));
         actionQuit->setText(QApplication::translate("ChatMainWindow", "Quit", 0));
         actionQuit->setShortcut(QApplication::translate("ChatMainWindow", "Ctrl+Q", 0));
         actionAboutQt->setText(QApplication::translate("ChatMainWindow", "About Qt...", 0));

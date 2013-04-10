@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -141,7 +141,8 @@ QT_BEGIN_HEADER
 #endif
 
 // other x86 intrinsics
-#if defined(QT_COMPILER_SUPPORTS_AVX) && defined(Q_CC_GNU)
+#if defined(QT_COMPILER_SUPPORTS_AVX) && defined(Q_CC_GNU) && \
+    (!defined(Q_CC_INTEL)|| __INTEL_COMPILER >= 1310 || (__GNUC__ * 100 + __GNUC_MINOR__ < 407))
 #define QT_COMPILER_SUPPORTS_X86INTRIN
 #include <x86intrin.h>
 #endif

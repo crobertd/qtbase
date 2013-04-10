@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -67,11 +67,7 @@
 #include <float.h>
 #include <QStyleHints>
 
-Q_DECLARE_METATYPE(QList<int>)
-Q_DECLARE_METATYPE(QList<QRectF>)
 Q_DECLARE_METATYPE(QPainterPath)
-Q_DECLARE_METATYPE(QPointF)
-Q_DECLARE_METATYPE(QRectF)
 
 #include "../../../qtest-config.h"
 
@@ -432,6 +428,7 @@ private slots:
     void ensureDirtySceneTransform();
     void focusScope();
     void focusScope2();
+    void focusScopeItemChangedWhileScopeDoesntHaveFocus();
     void stackBefore();
     void sceneModality();
     void panelModality();
@@ -7893,6 +7890,7 @@ void tst_QGraphicsItem::itemUsesExtendedStyleOption()
     scene.addItem(rect);
     rect->setPos(200, 200);
     QWidget topLevel;
+    topLevel.resize(200, 200);
     QGraphicsView view(&scene, &topLevel);
     topLevel.setWindowFlags(Qt::X11BypassWindowManagerHint);
     rect->startTrack = false;
@@ -8485,7 +8483,9 @@ void tst_QGraphicsItem::focusProxyDeletion()
 
     rect2 = new QGraphicsRectItem;
     rect->setFocusProxy(rect2);
+    QGraphicsItem **danglingFocusProxyRef = &rect->d_ptr->focusProxy;
     delete rect; // don't crash
+    QVERIFY(!rect2->d_ptr->focusProxyRefs.contains(danglingFocusProxyRef));
 
     rect = new QGraphicsRectItem;
     rect->setFocusProxy(rect2);
@@ -9370,6 +9370,62 @@ void tst_QGraphicsItem::focusScope2()
     QVERIFY(siblingChild2->focusItem());
     QCOMPARE(siblingFocusScope->focusScopeItem(), (QGraphicsItem *)siblingChild2);
     QCOMPARE(siblingFocusScope->focusItem(), (QGraphicsItem *)siblingChild2);
+}
+
+class FocusScopeItemPrivate;
+class FocusScopeItem : public QGraphicsItem
+{
+    Q_DECLARE_PRIVATE(FocusScopeItem)
+public:
+    FocusScopeItem(QGraphicsItem *parent = 0);
+    QRectF boundingRect() const { return QRectF(); }
+    void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *) { }
+
+    int focusScopeChanged;
+    FocusScopeItemPrivate *d_ptr;
+};
+
+class FocusScopeItemPrivate : QGraphicsItemPrivate
+{
+    Q_DECLARE_PUBLIC(FocusScopeItem)
+public:
+    void focusScopeItemChange(bool)
+    { ++q_func()->focusScopeChanged; }
+};
+
+FocusScopeItem::FocusScopeItem(QGraphicsItem *parent)
+    : QGraphicsItem(*new FocusScopeItemPrivate, parent), focusScopeChanged(0)
+{
+    setFlag(ItemIsFocusable);
+}
+
+void tst_QGraphicsItem::focusScopeItemChangedWhileScopeDoesntHaveFocus()
+{
+    QGraphicsRectItem rect;
+    rect.setFlags(QGraphicsItem::ItemIsFocusScope | QGraphicsItem::ItemIsFocusable);
+
+    FocusScopeItem *child1 = new FocusScopeItem(&rect);
+    FocusScopeItem *child2 = new FocusScopeItem(&rect);
+
+    QCOMPARE(rect.focusScopeItem(), (QGraphicsItem *)0);
+    QCOMPARE(child1->focusScopeChanged, 0);
+    QCOMPARE(child2->focusScopeChanged, 0);
+    child1->setFocus();
+    QCOMPARE(rect.focusScopeItem(), (QGraphicsItem *)child1);
+    QCOMPARE(child1->focusScopeChanged, 1);
+    QCOMPARE(child2->focusScopeChanged, 0);
+    child2->setFocus();
+    QCOMPARE(rect.focusScopeItem(), (QGraphicsItem *)child2);
+    QCOMPARE(child1->focusScopeChanged, 2);
+    QCOMPARE(child2->focusScopeChanged, 1);
+    child1->setFocus();
+    QCOMPARE(rect.focusScopeItem(), (QGraphicsItem *)child1);
+    QCOMPARE(child1->focusScopeChanged, 3);
+    QCOMPARE(child2->focusScopeChanged, 2);
+    child1->clearFocus();
+    QCOMPARE(rect.focusScopeItem(), (QGraphicsItem *)0);
+    QCOMPARE(child1->focusScopeChanged, 4);
+    QCOMPARE(child2->focusScopeChanged, 2);
 }
 
 void tst_QGraphicsItem::stackBefore()

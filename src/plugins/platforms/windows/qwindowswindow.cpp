@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -44,7 +44,9 @@
 #include "qwindowscontext.h"
 #include "qwindowsdrag.h"
 #include "qwindowsscreen.h"
-#include "qwindowscursor.h"
+#ifdef QT_NO_CURSOR
+#  include "qwindowscursor.h"
+#endif
 
 #ifdef QT_OPENGL_ES_2
 #  include "qwindowseglcontext.h"
@@ -55,6 +57,7 @@
 #include <QtGui/QWindow>
 #include <QtGui/QRegion>
 #include <private/qwindow_p.h>
+#include <private/qguiapplication_p.h>
 #include <qpa/qwindowsysteminterface.h>
 
 #include <QtCore/QDebug>
@@ -208,22 +211,42 @@ static bool shouldShowMaximizeButton(Qt::WindowFlags flags)
     return flags & Qt::WindowMaximizeButtonHint;
 }
 
-static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, qreal level)
+// Set the WS_EX_LAYERED flag on a HWND if required. This is required for
+// translucent backgrounds, not fully opaque windows and for
+// Qt::WindowTransparentForInput (in combination with WS_EX_TRANSPARENT).
+bool QWindowsWindow::setWindowLayered(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, qreal opacity)
 {
-#ifdef Q_OS_WINCE // maybe needs revisit WS_EX_LAYERED
+#ifndef Q_OS_WINCE // maybe needs revisiting WS_EX_LAYERED
+    const LONG exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+    const bool needsLayered = (flags & Qt::WindowTransparentForInput)
+        || (hasAlpha && (flags & Qt::FramelessWindowHint)) || opacity < 1.0;
+    const bool isLayered = (exStyle & WS_EX_LAYERED);
+    if (needsLayered != isLayered) {
+        if (needsLayered) {
+            SetWindowLong(hwnd, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
+        } else {
+            SetWindowLong(hwnd, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
+        }
+    }
+    return needsLayered;
+#else // !Q_OS_WINCE
     Q_UNUSED(hwnd);
     Q_UNUSED(flags);
+    Q_UNUSED(hasAlpha);
+    Q_UNUSED(opacity);
+    return false;
+#endif // Q_OS_WINCE
+}
+
+static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, qreal level)
+{
+#ifdef Q_OS_WINCE // WINCE does not support that feature and microsoft explicitly warns to use those calls
+    Q_UNUSED(hwnd);
+    Q_UNUSED(flags);
+    Q_UNUSED(hasAlpha);
     Q_UNUSED(level);
 #else
-    const long wl = GetWindowLong(hwnd, GWL_EXSTYLE);
-    const bool isOpaque = level == 1.0 && !(flags & Qt::WindowTransparentForInput);
-
-    if (isOpaque) {
-        if (wl & WS_EX_LAYERED)
-            SetWindowLong(hwnd, GWL_EXSTYLE, wl & ~WS_EX_LAYERED);
-    } else {
-        if ((wl & WS_EX_LAYERED) == 0)
-            SetWindowLong(hwnd, GWL_EXSTYLE, wl | WS_EX_LAYERED);
+    if (QWindowsWindow::setWindowLayered(hwnd, flags, hasAlpha, level)) {
         if (flags & Qt::FramelessWindowHint) {
             BLENDFUNCTION blend = {AC_SRC_OVER, 0, (BYTE)(255.0 * level), AC_SRC_ALPHA};
             QWindowsContext::user32dll.updateLayeredWindow(hwnd, NULL, NULL, NULL, NULL, NULL, 0, &blend, ULW_ALPHA);
@@ -266,11 +289,11 @@ static void setWindowOpacity(HWND hwnd, Qt::WindowFlags flags, qreal level)
 struct WindowCreationData
 {
     typedef QWindowsWindow::WindowData WindowData;
-    enum Flags { ForceChild = 0x1 };
+    enum Flags { ForceChild = 0x1, ForceTopLevel = 0x2 };
 
     WindowCreationData() : parentHandle(0), type(Qt::Widget), style(0), exStyle(0),
         topLevel(false), popup(false), dialog(false), desktop(false),
-        tool(false), embedded(false) {}
+        tool(false), embedded(false), hasAlpha(false) {}
 
     void fromWindow(const QWindow *w, const Qt::WindowFlags flags, unsigned creationFlags = 0);
     inline WindowData create(const QWindow *w, const QRect &geometry, QString title) const;
@@ -289,6 +312,7 @@ struct WindowCreationData
     bool desktop;
     bool tool;
     bool embedded;
+    bool hasAlpha;
 };
 
 QDebug operator<<(QDebug debug, const WindowCreationData &d)
@@ -307,6 +331,7 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
                                     unsigned creationFlags)
 {
     isGL = w->surfaceType() == QWindow::OpenGLSurface;
+    hasAlpha = w->format().hasAlpha();
     flags = flagsIn;
 
     // Sometimes QWindow doesn't have a QWindow parent but does have a native parent window,
@@ -318,10 +343,17 @@ void WindowCreationData::fromWindow(const QWindow *w, const Qt::WindowFlags flag
         parentHandle = (HWND)prop.value<WId>();
     }
 
-    topLevel = ((creationFlags & ForceChild) || embedded) ? false : w->isTopLevel();
+    if (creationFlags & ForceChild) {
+        topLevel = false;
+    } else if (embedded) {
+        // Embedded native windows (for example Active X server windows) are by
+        // definition never toplevel, even though they do not have QWindow parents.
+        topLevel = false;
+    } else {
+        topLevel = (creationFlags & ForceTopLevel) ? true : w->isTopLevel();
+    }
 
     if (topLevel && flags == 1) {
-        qWarning("Remove me: fixing toplevel window flags");
         flags |= Qt::WindowTitleHint|Qt::WindowSystemMenuHint|Qt::WindowMinimizeButtonHint
                 |Qt::WindowMaximizeButtonHint|Qt::WindowCloseButtonHint;
     }
@@ -520,7 +552,7 @@ void WindowCreationData::initialize(HWND hwnd, bool frameChange, qreal opacityLe
                 EnableMenuItem(systemMenu, SC_CLOSE, MF_BYCOMMAND|MF_GRAYED);
         }
 
-        setWindowOpacity(hwnd, flags, opacityLevel);
+        setWindowOpacity(hwnd, flags, hasAlpha, opacityLevel);
     } else { // child.
         SetWindowPos(hwnd, HWND_TOP, 0, 0, 0, 0, swpFlags);
     }
@@ -698,7 +730,9 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
     m_hdc(0),
     m_windowState(Qt::WindowNoState),
     m_opacity(1.0),
+#ifndef QT_NO_CURSOR
     m_cursor(QWindowsScreen::screenOf(aWindow)->windowsCursor()->standardWindowCursor()),
+#endif
     m_dropTarget(0),
     m_savedStyle(0),
     m_format(aWindow->format()),
@@ -728,15 +762,22 @@ QWindowsWindow::QWindowsWindow(QWindow *aWindow, const WindowData &data) :
             break;
         }
     }
+#ifndef Q_OS_WINCE
     if (QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch)
         QWindowsContext::user32dll.registerTouchWindow(m_data.hwnd, 0);
+#endif // !Q_OS_WINCE
     setWindowState(aWindow->windowState());
+    const qreal opacity = qt_window_private(aWindow)->opacity;
+    if (!qFuzzyCompare(opacity, qreal(1.0)))
+        setOpacity(opacity);
 }
 
 QWindowsWindow::~QWindowsWindow()
 {
+#ifndef Q_OS_WINCE
     if (QWindowsContext::instance()->systemInfo() & QWindowsContext::SI_SupportsTouch)
         QWindowsContext::user32dll.unregisterTouchWindow(m_data.hwnd);
+#endif // !Q_OS_WINCE
     destroyWindow();
     destroyIcon();
 }
@@ -766,7 +807,7 @@ void QWindowsWindow::destroyWindow()
                 ShowWindow(handle, SW_SHOW);
             }
         }
-#endif
+#endif // !Q_OS_WINCE
         if (m_data.hwnd != GetDesktopWindow())
             DestroyWindow(m_data.hwnd);
         QWindowsContext::instance()->removeWindow(m_data.hwnd);
@@ -776,21 +817,29 @@ void QWindowsWindow::destroyWindow()
 
 void QWindowsWindow::registerDropSite()
 {
+#ifndef QT_NO_CLIPBOARD
+#  ifndef QT_NO_DRAGANDDROP
     if (m_data.hwnd && !m_dropTarget) {
         m_dropTarget = new QWindowsOleDropTarget(window());
         RegisterDragDrop(m_data.hwnd, m_dropTarget);
         CoLockObjectExternal(m_dropTarget, true, true);
     }
+#  endif // !QT_NO_DRAGANDDROP
+#endif // !QT_NO_CLIPBOARD
 }
 
 void QWindowsWindow::unregisterDropSite()
 {
+#ifndef QT_NO_CLIPBOARD
+#  ifndef QT_NO_DRAGANDDROP
     if (m_data.hwnd && m_dropTarget) {
         m_dropTarget->Release();
         CoLockObjectExternal(m_dropTarget, false, true);
         RevokeDragDrop(m_data.hwnd);
         m_dropTarget = 0;
     }
+#  endif // !QT_NO_DRAGANDDROP
+#endif // !QT_NO_CLIPBOARD
 }
 
 // Returns topmost QWindowsWindow ancestor even if there are embedded windows in the chain.
@@ -981,10 +1030,9 @@ void QWindowsWindow::setParent_sys(const QPlatformWindow *parent) const
 
         // WS_CHILD/WS_POPUP must be manually set/cleared in addition
         // to dialog frames, etc (see  SetParent() ) if the top level state changes.
-        if (wasTopLevel != isTopLevel) {
-            const unsigned flags = isTopLevel ? unsigned(0) : unsigned(WindowCreationData::ForceChild);
-            setWindowFlags_sys(window()->flags(), flags);
-        }
+        // Force toplevel state as QWindow::isTopLevel cannot be relied upon here.
+        if (wasTopLevel != isTopLevel)
+            setWindowFlags_sys(window()->flags(), unsigned(isTopLevel ? WindowCreationData::ForceTopLevel : WindowCreationData::ForceChild));
     }
 }
 
@@ -1185,8 +1233,10 @@ void QWindowsWindow::setWindowTitle(const QString &title)
 {
     if (QWindowsContext::verboseWindows)
         qDebug() << __FUNCTION__ << this << window() <<title;
-    if (m_data.hwnd)
-        SetWindowText(m_data.hwnd, (const wchar_t*)title.utf16());
+    if (m_data.hwnd) {
+        const QString fullTitle = formatWindowTitle(title, QStringLiteral(" - "));
+        SetWindowText(m_data.hwnd, (const wchar_t*)fullTitle.utf16());
+    }
 }
 
 void QWindowsWindow::setWindowFlags(Qt::WindowFlags flags)
@@ -1239,6 +1289,10 @@ void QWindowsWindow::handleWindowStateChange(Qt::WindowState state)
     setFlag(FrameDirty);
     m_windowState = state;
     QWindowSystemInterface::handleWindowStateChanged(window(), state);
+    if (state == Qt::WindowMinimized) {
+        handleHidden();
+        QWindowSystemInterface::flushWindowSystemEvents(); // Tell QQuickWindow to stop rendering now.
+    }
 }
 
 void QWindowsWindow::setWindowState(Qt::WindowState state)
@@ -1446,7 +1500,7 @@ void QWindowsWindow::setOpacity(qreal level)
     if (m_opacity != level) {
         m_opacity = level;
         if (m_data.hwnd)
-            setWindowOpacity(m_data.hwnd, m_data.flags, level);
+            setWindowOpacity(m_data.hwnd, m_data.flags, window()->format().hasAlpha(), level);
     }
 }
 
@@ -1609,11 +1663,14 @@ void QWindowsWindow::getSizeHints(MINMAXINFO *mmi) const
 
 void QWindowsWindow::applyCursor()
 {
+#ifndef QT_NO_CURSOR
     SetCursor(m_cursor.handle());
+#endif
 }
 
 void QWindowsWindow::setCursor(const QWindowsWindowCursor &c)
 {
+#ifndef QT_NO_CURSOR
     if (c.handle() != m_cursor.handle()) {
         const bool underMouse = QWindowsContext::instance()->windowUnderMouse() == window();
         if (QWindowsContext::verboseWindows)
@@ -1623,6 +1680,7 @@ void QWindowsWindow::setCursor(const QWindowsWindowCursor &c)
         if (underMouse)
             applyCursor();
     }
+#endif
 }
 
 /*!

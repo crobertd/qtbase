@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -325,7 +325,7 @@ void QScrollBar::initStyleOption(QStyleOptionSlider *option) const
     option->upsideDown = d->invertedAppearance;
     if (d->orientation == Qt::Horizontal)
         option->state |= QStyle::State_Horizontal;
-    if ((d->flashed || !d->transient) && style()->styleHint(QStyle::SH_ScrollBar_Transient))
+    if ((d->flashed || !d->transient) && style()->styleHint(QStyle::SH_ScrollBar_Transient, 0, this))
         option->state |= QStyle::State_On;
 }
 

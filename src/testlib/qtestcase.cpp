@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtTest module of the Qt Toolkit.
@@ -185,7 +185,7 @@ QT_BEGIN_NAMESPACE
 
    \relates QTest
 
-   Invokes QTRY_VERIFY_WITH_TIMEOUT() with a timeout of five seconds.
+   Checks the \a condition by invoking QTRY_VERIFY_WITH_TIMEOUT() with a timeout of five seconds.
 
    \note This macro can only be used in a test function that is invoked
    by the test framework.
@@ -215,7 +215,8 @@ QT_BEGIN_NAMESPACE
 
    \relates QTest
 
-   Invokes QTRY_COMPARE_WITH_TIMEOUT() with a timeout of five seconds.
+   Performs a comparison of the \a actual and \a expected values by
+   invoking QTRY_COMPARE_WITH_TIMEOUT() with a timeout of five seconds.
 
    \note This macro can only be used in a test function that is invoked
    by the test framework.
@@ -1836,7 +1837,7 @@ char *toHexRepresentation(const char *ba, int length)
      * running out of memory and flooding things when the byte array
      * is large.
      *
-     * maxLen can't be for example 200 because QTestLib is sprinkled with fixed
+     * maxLen can't be for example 200 because Qt Test is sprinkled with fixed
      * size char arrays.
      * */
     const int maxLen = 50;
@@ -2036,7 +2037,7 @@ FatalSignalHandler::~FatalSignalHandler()
     are executed if they exist. See \l{Creating a Test} for more details.
 
     Optionally, the command line arguments \a argc and \a argv can be provided.
-    For a list of recognized arguments, read \l {QTestLib Command Line Arguments}.
+    For a list of recognized arguments, read \l {Qt Test Command Line Arguments}.
 
     The following example will run all tests in \c MyTestObject:
 

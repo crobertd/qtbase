@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -133,6 +133,7 @@
 // factory loader
 #include <qcoreapplication.h>
 #include <private/qfactoryloader_p.h>
+#include <QMutexLocker>
 
 // image handlers
 #include <private/qbmphandler_p.h>
@@ -162,11 +163,14 @@ enum _qt_BuiltInFormatType {
 #endif
 #ifndef QT_NO_IMAGEFORMAT_JPEG
     _qt_JpgFormat,
+    _qt_JpegFormat,
 #endif
 #ifdef QT_BUILTIN_GIF_READER
     _qt_GifFormat,
 #endif
+#ifndef QT_NO_IMAGEFORMAT_BMP
     _qt_BmpFormat,
+#endif
 #ifndef QT_NO_IMAGEFORMAT_PPM
     _qt_PpmFormat,
     _qt_PgmFormat,
@@ -194,11 +198,14 @@ static const _qt_BuiltInFormatStruct _qt_BuiltInFormats[] = {
 #endif
 #ifndef QT_NO_IMAGEFORMAT_JPEG
     {_qt_JpgFormat, "jpg"},
+    {_qt_JpegFormat, "jpeg"},
 #endif
 #ifdef QT_BUILTIN_GIF_READER
     {_qt_GifFormat, "gif"},
 #endif
+#ifndef QT_NO_IMAGEFORMAT_BMP
     {_qt_BmpFormat, "bmp"},
+#endif
 #ifndef QT_NO_IMAGEFORMAT_PPM
     {_qt_PpmFormat, "ppm"},
     {_qt_PgmFormat, "pgm"},
@@ -226,6 +233,9 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
     QByteArray suffix;
 
 #ifndef QT_NO_IMAGEFORMATPLUGIN
+    static QMutex mutex;
+    QMutexLocker locker(&mutex);
+
     typedef QMultiMap<int, QString> PluginKeyMap;
 
     // check if we have plugins that support the image format
@@ -422,6 +432,7 @@ static QImageIOHandler *createReadHandlerHelper(QIODevice *device,
 #endif
 #ifndef QT_NO_IMAGEFORMAT_JPEG
             case _qt_JpgFormat:
+            case _qt_JpegFormat:
                 if (QJpegHandler::canRead(device))
                     handler = new QJpegHandler;
                 break;
@@ -1456,9 +1467,8 @@ void supportedImageHandlerFormats(QFactoryLoader *loader,
     \row    \li SVG    \li Scalable Vector Graphics
     \endtable
 
-    Reading and writing SVG files is supported through Qt's
-    \l{QtSvg Module}{SVG Module}. The \l{QtImageFormats Module}{Image Formats Module}
-    provides support for additional image formats.
+    Reading and writing SVG files is supported through the \l{Qt SVG} module.
+    The \l{Qt Image Formats} module provides support for additional image formats.
 
     Note that the QApplication instance must be created before this function is
     called.

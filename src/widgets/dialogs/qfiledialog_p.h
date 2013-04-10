@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -204,6 +204,7 @@ public:
     void _q_updateOkButton();
     void _q_currentChanged(const QModelIndex &index);
     void _q_enterDirectory(const QModelIndex &index);
+    void _q_nativeEnterDirectory(const QString &directory);
     void _q_goToDirectory(const QString &);
     void _q_useNameFilter(int index);
     void _q_selectionChanged();

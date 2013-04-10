@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -154,6 +154,7 @@ public:
 
     virtual void setVisible(bool visible);
     bool isVisible() const;
+    virtual bool isExposed() const { return m_windowState != Qt::WindowMinimized && isVisible(); }
     virtual bool isActive() const;
     virtual bool isEmbedded(const QPlatformWindow *parentWindow) const;
     virtual QPoint mapToGlobal(const QPoint &pos) const;
@@ -215,13 +216,17 @@ public:
     static inline void *userDataOf(HWND hwnd);
     static inline void setUserDataOf(HWND hwnd, void *ud);
 
+    static bool setWindowLayered(HWND hwnd, Qt::WindowFlags flags, bool hasAlpha, qreal opacity);
+
     HDC getDC();
     void releaseDC();
 #ifndef Q_OS_WINCE // maybe available on some SDKs revisit WM_GETMINMAXINFO
     void getSizeHints(MINMAXINFO *mmi) const;
 #endif
 
+#ifndef QT_NO_CURSOR
     QWindowsWindowCursor cursor() const { return m_cursor; }
+#endif
     void setCursor(const QWindowsWindowCursor &c);
     void applyCursor();
 
@@ -267,7 +272,9 @@ private:
     HDC m_hdc;
     Qt::WindowState m_windowState;
     qreal m_opacity;
+#ifndef QT_NO_CURSOR
     QWindowsWindowCursor m_cursor;
+#endif
     QWindowsOleDropTarget *m_dropTarget;
     unsigned m_savedStyle;
     QRect m_savedFrameGeometry;

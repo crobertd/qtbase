@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -65,10 +65,11 @@ typedef QList<Node*> NodeList;
 typedef QMap<QString, Node*> NodeMap;
 typedef QMultiMap<QString, Node*> NodeMultiMap;
 typedef QMultiMap<QString, const ExampleNode*> ExampleNodeMap;
-typedef QList<QPair<QString,QString> > ImportList;
 
 class Node
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::Node)
+
 public:
     enum Type {
         Namespace,
@@ -129,8 +130,7 @@ public:
         NextLink,
         PreviousLink,
         ContentsLink,
-        IndexLink,
-        InheritsLink /*,
+        IndexLink /*,
         GlossaryLink,
         CopyrightLink,
         ChapterLink,
@@ -205,7 +205,7 @@ public:
     virtual bool hasProperty(const QString& ) const { return false; }
     virtual void getMemberNamespaces(NodeMap& ) { }
     virtual void getMemberClasses(NodeMap& ) { }
-    bool isInternal() const;
+    virtual bool isInternal() const;
     bool isIndexNode() const { return indexNodeFlag_; }
     bool wasSeen() const { return seen_; }
     Type type() const { return nodeType_; }
@@ -529,6 +529,26 @@ private:
     QString imageFileName_;
 };
 
+struct ImportRec {
+    QString name_;      // module name
+    QString version_;   // <major> . <minor>
+    QString importId_;  // "as" name
+    QString importUri_; // subdirectory of module directory
+
+    ImportRec(const QString& name,
+              const QString& version,
+              const QString& importId,
+              const QString& importUri)
+    : name_(name), version_(version), importId_(importId), importUri_(importUri) { }
+    QString& name() { return name_; }
+    QString& version() { return version_; }
+    QString& importId() { return importId_; }
+    QString& importUri() { return importUri_; }
+    bool isEmpty() const { return name_.isEmpty(); }
+};
+
+typedef QList<ImportRec> ImportList;
+
 class QmlClassNode : public DocNode
 {
 public:
@@ -542,10 +562,13 @@ public:
     virtual void clearCurrentChild();
     virtual bool isAbstract() const { return abstract_; }
     virtual void setAbstract(bool b) { abstract_ = b; }
+    virtual bool isInternal() const { return (status() == Internal); }
     const ImportList& importList() const { return importList_; }
     void setImportList(const ImportList& il) { importList_ = il; }
-    const DocNode* qmlBase() const { return base_; }
-    void setQmlBase(DocNode* b) { base_ = b; }
+    const QString& qmlBaseName() const { return baseName_; }
+    void setQmlBaseName(const QString& name) { baseName_ = name; }
+    const QmlClassNode* qmlBaseNode() const { return baseNode_; }
+    void setQmlBaseNode(QmlClassNode* b) { baseNode_ = b; }
     void requireCppClass() { cnodeRequired_ = true; }
     bool cppClassRequired() const { return cnodeRequired_; }
     static void addInheritedBy(const QString& base, Node* sub);
@@ -560,7 +583,8 @@ private:
     bool abstract_;
     bool cnodeRequired_;
     ClassNode*    cnode_;
-    DocNode*     base_;
+    QString      baseName_;
+    QmlClassNode*       baseNode_;
     ImportList          importList_;
 };
 
@@ -596,6 +620,8 @@ class QmlPropertyNode;
 
 class QmlPropertyNode : public LeafNode
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::QmlPropertyNode)
+
 public:
     QmlPropertyNode(QmlClassNode *parent,
                     const QString& name,
@@ -822,13 +848,8 @@ private:
 
     QString     rt;
     QStringList pp;
-#ifdef Q_WS_WIN
     Metaness    met;
     Virtualness vir;
-#else
-    Metaness met : 4;
-    Virtualness vir : 2;
-#endif
     bool con : 1;
     bool sta : 1;
     bool ove : 1;

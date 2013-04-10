@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -68,6 +68,7 @@ private slots:
     void constByteArray();
     void leftJustified();
     void rightJustified();
+    void setNum();
     void startsWith_data();
     void startsWith();
     void startsWith_char();
@@ -244,7 +245,6 @@ QByteArray verifyZeroTermination(const QByteArray &ba)
 
 tst_QByteArray::tst_QByteArray()
 {
-    qRegisterMetaType<qulonglong>("qulonglong");
 }
 
 void tst_QByteArray::qCompress_data()
@@ -395,6 +395,49 @@ void tst_QByteArray::rightJustified()
     QCOMPARE(a.rightJustified(1,' ',true),QByteArray("A"));
     QCOMPARE(a.rightJustified(0,' ',true),QByteArray(""));
     QCOMPARE(a,QByteArray("ABC"));
+}
+
+void tst_QByteArray::setNum()
+{
+    QByteArray a;
+    QCOMPARE(a.setNum(-1), QByteArray("-1"));
+    QCOMPARE(a.setNum(0), QByteArray("0"));
+    QCOMPARE(a.setNum(0, 2), QByteArray("0"));
+    QCOMPARE(a.setNum(0, 36), QByteArray("0"));
+    QCOMPARE(a.setNum(1), QByteArray("1"));
+    QCOMPARE(a.setNum(35, 36), QByteArray("z"));
+    QCOMPARE(a.setNum(37, 2), QByteArray("100101"));
+    QCOMPARE(a.setNum(37, 36), QByteArray("11"));
+
+    // Negative numbers are only properly supported for base 10.
+    QCOMPARE(a.setNum(short(-1), 16), QByteArray("ffff"));
+    QCOMPARE(a.setNum(int(-1), 16), QByteArray("ffffffff"));
+    QCOMPARE(a.setNum(qlonglong(-1), 16), QByteArray("ffffffffffffffff"));
+
+    QCOMPARE(a.setNum(short(-1), 10), QByteArray("-1"));
+    QCOMPARE(a.setNum(int(-1), 10), QByteArray("-1"));
+    QCOMPARE(a.setNum(qlonglong(-1), 10), QByteArray("-1"));
+
+    QCOMPARE(a.setNum(-123), QByteArray("-123"));
+    QCOMPARE(a.setNum(0x123,16), QByteArray("123"));
+    QCOMPARE(a.setNum((short)123), QByteArray("123"));
+
+    QCOMPARE(a.setNum(1.23), QByteArray("1.23"));
+    QCOMPARE(a.setNum(1.234567), QByteArray("1.23457"));
+
+    // Note that there are no 'long' overloads, so not all of the
+    // QString::setNum() tests can be re-used.
+    QCOMPARE(a.setNum(Q_INT64_C(123)), QByteArray("123"));
+    // 2^40 == 1099511627776
+    QCOMPARE(a.setNum(Q_INT64_C(-1099511627776)), QByteArray("-1099511627776"));
+    QCOMPARE(a.setNum(Q_UINT64_C(1099511627776)), QByteArray("1099511627776"));
+    QCOMPARE(a.setNum(Q_INT64_C(9223372036854775807)), // LLONG_MAX
+            QByteArray("9223372036854775807"));
+    QCOMPARE(a.setNum(-Q_INT64_C(9223372036854775807) - Q_INT64_C(1)),
+            QByteArray("-9223372036854775808"));
+    QCOMPARE(a.setNum(Q_UINT64_C(18446744073709551615)), // ULLONG_MAX
+            QByteArray("18446744073709551615"));
+    QCOMPARE(a.setNum(0.000000000931322574615478515625), QByteArray("9.31323e-10"));
 }
 
 void tst_QByteArray::startsWith_data()
@@ -1191,7 +1234,6 @@ void tst_QByteArray::toInt()
     QCOMPARE( number, expectednumber );
 }
 
-Q_DECLARE_METATYPE(qulonglong)
 void tst_QByteArray::toULong_data()
 {
     QTest::addColumn<QByteArray>("str");
@@ -1416,8 +1458,8 @@ void tst_QByteArray::fromPercentEncoding_data()
     QTest::newRow("NormalString") << QByteArray("filename") << QByteArray("filename");
     QTest::newRow("NormalStringEncoded") << QByteArray("file%20name") << QByteArray("file name");
     QTest::newRow("JustEncoded") << QByteArray("%20") << QByteArray(" ");
-    QTest::newRow("HTTPUrl") << QByteArray("http://qt.nokia.com") << QByteArray("http://qt.nokia.com");
-    QTest::newRow("HTTPUrlEncoded") << QByteArray("http://qt%20nokia%20com") << QByteArray("http://qt nokia com");
+    QTest::newRow("HTTPUrl") << QByteArray("http://qt-project.org") << QByteArray("http://qt-project.org");
+    QTest::newRow("HTTPUrlEncoded") << QByteArray("http://qt-project%20org") << QByteArray("http://qt-project org");
     QTest::newRow("EmptyString") << QByteArray("") << QByteArray("");
     QTest::newRow("Task27166") << QByteArray("Fran%C3%A7aise") << QByteArray("Française");
 }
@@ -1438,8 +1480,8 @@ void tst_QByteArray::toPercentEncoding_data()
     QTest::newRow("NormalString") << QByteArray("filename") << QByteArray("filename");
     QTest::newRow("NormalStringEncoded") << QByteArray("file name") << QByteArray("file%20name");
     QTest::newRow("JustEncoded") << QByteArray(" ") << QByteArray("%20");
-    QTest::newRow("HTTPUrl") << QByteArray("http://qt.nokia.com") << QByteArray("http%3A//qt.nokia.com");
-    QTest::newRow("HTTPUrlEncoded") << QByteArray("http://qt nokia com") << QByteArray("http%3A//qt%20nokia%20com");
+    QTest::newRow("HTTPUrl") << QByteArray("http://qt-project.org") << QByteArray("http%3A//qt-project.org");
+    QTest::newRow("HTTPUrlEncoded") << QByteArray("http://qt-project org") << QByteArray("http%3A//qt-project%20org");
     QTest::newRow("EmptyString") << QByteArray("") << QByteArray("");
     QTest::newRow("Task27166") << QByteArray("Française") << QByteArray("Fran%C3%A7aise");
 }

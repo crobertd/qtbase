@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -44,10 +44,6 @@
 #include <limits.h>
 #include <qdebug.h>
 
-Q_DECLARE_METATYPE(QRectF)
-Q_DECLARE_METATYPE(QPointF)
-Q_DECLARE_METATYPE(QRect)
-Q_DECLARE_METATYPE(QPoint)
 
 class tst_QRect : public QObject
 {

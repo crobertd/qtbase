@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -1199,7 +1199,7 @@ QByteArray QDBusConnection::localMachineId()
     \inmodule QtDBus
 
     \brief The QDBus namespace contains miscellaneous identifiers used
-    throughout the QtDBus library.
+    throughout the Qt D-Bus module.
 */
 
 /*!

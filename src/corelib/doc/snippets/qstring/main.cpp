@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -856,8 +856,8 @@ void Widget::toLongLongFunction()
 void Widget::toLowerFunction()
 {
     //! [75]
-    QString str = "Qt by NOKIA";
-    str = str.toLower();        // str == "qt by nokia"
+    QString str = "The Qt PROJECT";
+    str = str.toLower();        // str == "the qt project"
     //! [75]
 }
 

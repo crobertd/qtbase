@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -466,7 +466,7 @@ static QSizeF closestAcceptableSize(const QSizeF &proposed,
 
     do {
         if (maxw - minw < 0.1) {
-            // we still havent found anything, cut off binary search
+            // we still haven't found anything, cut off binary search
             minw = maxw;
             minh = maxh;
         }

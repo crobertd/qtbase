@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -82,6 +82,8 @@ typedef QMultiMap<QString, TargetRec> TargetRecMultiMap;
 
 class QDocDatabase
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::QDocDatabase)
+
   public:
     static QDocDatabase* qdocDB();
     static void destroyQdocDB();
@@ -105,6 +107,7 @@ class QDocDatabase
     DocNode* addToQmlModule(const QString& name, Node* node);
 
     QmlClassNode* findQmlType(const QString& qmid, const QString& name) const;
+    QmlClassNode* findQmlType(const ImportRec& import, const QString& name) const;
 
     void findAllClasses(const InnerNode *node);
     void findAllFunctions(const InnerNode *node);
@@ -138,6 +141,7 @@ class QDocDatabase
     Tree* tree() { return tree_; }
     NamespaceNode* treeRoot() { return tree_->root(); }
     void resolveInheritance() { tree_->resolveInheritance(); }
+    void resolveQmlInheritance(InnerNode* root);
     void resolveIssues();
     void fixInheritance() { tree_->fixInheritance(); }
     void resolveProperties() { tree_->resolveProperties(); }

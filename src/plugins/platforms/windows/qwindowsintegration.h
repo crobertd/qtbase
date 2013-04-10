@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -75,8 +75,10 @@ public:
     virtual QAbstractEventDispatcher *guiThreadEventDispatcher() const;
 #ifndef QT_NO_CLIPBOARD
     virtual QPlatformClipboard *clipboard() const;
-#endif
+#  ifndef QT_NO_DRAGANDDROP
     virtual QPlatformDrag *drag() const;
+#  endif
+#endif !QT_NO_CLIPBOARD
     virtual QPlatformInputContext *inputContext() const;
 #ifndef QT_NO_ACCESSIBILITY
     virtual QPlatformAccessibility *accessibility() const;

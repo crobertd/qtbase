@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -108,7 +108,7 @@
 
 QT_BEGIN_NAMESPACE
 
-extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
+extern QImage qt_gl_read_frame_buffer(const QSize&, bool, bool);
 
 
 QGLContext* QGLPBufferGLPaintDevice::context() const
@@ -391,7 +391,7 @@ QImage QGLPixelBuffer::toImage() const
     const_cast<QGLPixelBuffer *>(this)->makeCurrent();
     if (d->fbo)
         d->fbo->bind();
-    return qt_gl_read_framebuffer(d->req_size, d->format.alpha(), true);
+    return qt_gl_read_frame_buffer(d->req_size, d->format.alpha(), true);
 }
 
 /*!

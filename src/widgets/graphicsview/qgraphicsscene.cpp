@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -245,9 +245,6 @@
 #include <QtGui/qtransform.h>
 #include <QtGui/qinputmethod.h>
 #include <QtWidgets/qgraphicseffect.h>
-#ifndef QT_NO_ACCESSIBILITY
-# include <QtGui/qaccessible.h>
-#endif
 #include <private/qapplication_p.h>
 #include <private/qobject_p.h>
 #include <private/qgraphicseffect_p.h>
@@ -836,14 +833,6 @@ void QGraphicsScenePrivate::setFocusItemHelper(QGraphicsItem *item,
         focusItem = item;
     updateInputMethodSensitivityInViews();
 
-#ifndef QT_NO_ACCESSIBILITY
-    if (focusItem) {
-        if (QGraphicsObject *focusObj = focusItem->toGraphicsObject()) {
-            QAccessibleEvent event(focusObj, QAccessible::Focus);
-            QAccessible::updateAccessibility(&event);
-        }
-    }
-#endif
     if (item) {
         QFocusEvent event(QEvent::FocusIn, focusReason);
         sendEvent(item, &event);
@@ -6212,7 +6201,7 @@ void QGraphicsScenePrivate::gestureEventHandler(QGestureEvent *event)
                 // if the gesture was ignored by its target, we will update the
                 // targetItems list with a possible target items (items that
                 // want to receive partial gestures).
-                // ### wont' work if the target was destroyed in the event
+                // ### won't work if the target was destroyed in the event
                 //     we will just stop delivering it.
                 if (receiver && receiver.data() == gestureTargets.value(g, 0))
                     ignoredGestures.insert(g);

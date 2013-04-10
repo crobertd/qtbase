@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -697,9 +697,8 @@ void supportedImageHandlerFormats(QFactoryLoader *loader,
     \row    \li XPM    \li X11 Pixmap
     \endtable
 
-    Reading and writing SVG files is supported through Qt's
-    \l{QtSvg Module}{SVG Module}. The \l{QtImageFormats Module}{Image Formats Module}
-    provides support for additional image formats.
+    Reading and writing SVG files is supported through the \l{Qt SVG} module.
+    The \l{Qt Image Formats} module provides support for additional image formats.
 
     Note that the QApplication instance must be created before this function is
     called.
@@ -709,7 +708,9 @@ void supportedImageHandlerFormats(QFactoryLoader *loader,
 QList<QByteArray> QImageWriter::supportedImageFormats()
 {
     QSet<QByteArray> formats;
+#ifndef QT_NO_IMAGEFORMAT_BMP
     formats << "bmp";
+#endif
 #ifndef QT_NO_IMAGEFORMAT_PPM
     formats << "pbm" << "pgm" << "ppm";
 #endif

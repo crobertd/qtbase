@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS   = mainwindow.h \
             textedit.h
 SOURCES   = main.cpp \
@@ -6,9 +8,7 @@ SOURCES   = main.cpp \
 RESOURCES = customcompleter.qrc
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/tools/customcompleter
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/tools/customcompleter
 INSTALLS += target
-
-QT += widgets
 
 simulator: warning(This example might not fully work on Simulator platform)

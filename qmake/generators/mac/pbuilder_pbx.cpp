@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the qmake application of the Qt Toolkit.
@@ -136,6 +136,7 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
     QList<ProjectBuilderSubDirs*> pb_subdirs;
     pb_subdirs.append(new ProjectBuilderSubDirs(project, QString(), false));
     QString oldpwd = qmake_getpwd();
+    QString oldoutpwd = Option::output_dir;
     QMap<QString, ProStringList> groups;
     for(int pb_subdir = 0; pb_subdir < pb_subdirs.size(); ++pb_subdir) {
         ProjectBuilderSubDirs *pb = pb_subdirs[pb_subdir];
@@ -172,6 +173,7 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
                     if(!qmake_setpwd(dir))
                         fprintf(stderr, "Cannot find directory: %s\n", dir.toLatin1().constData());
                 }
+                Option::output_dir = Option::globals->shadowedPath(QDir::cleanPath(fi.absoluteFilePath()));
                 if(tmp_proj.read(fn)) {
                     if(tmp_proj.first("TEMPLATE") == "subdirs") {
                         QMakeProject *pp = new QMakeProject(&tmp_proj);
@@ -189,13 +191,13 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
                             bool in_root = true;
                             QString name = qmake_getpwd();
                             if(project->isActiveConfig("flat")) {
-                                QString flat_file = fileFixify(name, oldpwd, Option::output_dir, FileFixifyRelative);
+                                QString flat_file = fileFixify(name, oldpwd, oldoutpwd, FileFixifyRelative);
                                 if(flat_file.indexOf(Option::dir_sep) != -1) {
                                     QStringList dirs = flat_file.split(Option::dir_sep);
                                     name = dirs.back();
                                 }
                             } else {
-                                QString flat_file = fileFixify(name, oldpwd, Option::output_dir, FileFixifyRelative);
+                                QString flat_file = fileFixify(name, oldpwd, oldoutpwd, FileFixifyRelative);
                                 if(QDir::isRelativePath(flat_file) && flat_file.indexOf(Option::dir_sep) != -1) {
                                     QString last_grp("QMAKE_SUBDIR_PBX_HEIR_GROUP");
                                     QStringList dirs = flat_file.split(Option::dir_sep);
@@ -280,6 +282,7 @@ ProjectBuilderMakefileGenerator::writeSubDirs(QTextStream &t)
                 }
             nextfile:
                 qmake_setpwd(oldpwd);
+                Option::output_dir = oldoutpwd;
             }
         }
     }
@@ -902,12 +905,14 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                     QString key = keyFor(library);
                     bool is_frmwrk = (library.endsWith(".framework"));
                     t << "\t\t" << key << " = {" << "\n"
-                      << "\t\t\t" << writeSettings("isa", (is_frmwrk ? "PBXFrameworkReference" : "PBXFileReference"), SettingsNoQuote) << ";" << "\n"
+                      << "\t\t\t" << writeSettings("isa", "PBXFileReference", SettingsNoQuote) << ";" << "\n"
                       << "\t\t\t" << writeSettings("name", escapeFilePath(name)) << ";" << "\n"
                       << "\t\t\t" << writeSettings("path", escapeFilePath(library)) << ";" << "\n"
                       << "\t\t\t" << writeSettings("refType", QString::number(reftypeForFile(library)), SettingsNoQuote) << ";" << "\n"
-                      << "\t\t\t" << writeSettings("sourceTree", sourceTreeForFile(library)) << ";" << "\n"
-                      << "\t\t" << "};" << "\n";
+                      << "\t\t\t" << writeSettings("sourceTree", sourceTreeForFile(library)) << ";" << "\n";
+                    if (is_frmwrk)
+                        t << "\t\t\t" << writeSettings("lastKnownFileType", "wrapper.framework") << ";" << "\n";
+                    t << "\t\t" << "};" << "\n";
                     project->values("QMAKE_PBX_LIBRARIES").append(key);
                     QString build_key = keyFor(library + ".BUILDABLE");
                     t << "\t\t" << build_key << " = {" << "\n"
@@ -1180,10 +1185,6 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
       << "\t\t\t\t" << writeSettings("SECTORDER_FLAGS", ProStringList()) << ";" << "\n"
       << "\t\t\t\t" << writeSettings("WARNING_CFLAGS", ProStringList()) << ";" << "\n"
       << "\t\t\t\t" << writeSettings("PREBINDING", ProStringList((project->isEmpty("QMAKE_DO_PREBINDING") ? "NO" : "YES")), SettingsNoQuote) << ";" << "\n";
-    if(!project->isEmpty("PRECOMPILED_HEADER")) {
-        t << "\t\t\t\t" << writeSettings("GCC_PRECOMPILE_PREFIX_HEADER", "YES") << ";" << "\n"
-          << "\t\t\t\t" << writeSettings("GCC_PREFIX_HEADER", escapeFilePath(project->first("PRECOMPILED_HEADER"))) << ";" << "\n";
-    }
     if((project->first("TEMPLATE") == "app" && project->isActiveConfig("app_bundle")) ||
        (project->first("TEMPLATE") == "lib" && !project->isActiveConfig("staticlib") &&
         project->isActiveConfig("lib_bundle"))) {
@@ -1250,8 +1251,6 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
         t << "\t\t\t\t" << writeSettings("DYLIB_COMPATIBILITY_VERSION", project->first("COMPAT_VERSION")) << ";" << "\n";
     if(!project->isEmpty("QMAKE_MACOSX_DEPLOYMENT_TARGET"))
         t << "\t\t\t\t" << writeSettings("MACOSX_DEPLOYMENT_TARGET", project->first("QMAKE_MACOSX_DEPLOYMENT_TARGET")) << ";" << "\n";
-    if (!project->isEmpty("OBJECTS_DIR"))
-        t << "\t\t\t\t" << writeSettings("OBJROOT", fixForOutput(project->first("OBJECTS_DIR").toQString())) << ";" << "\n";
     if(project->first("TEMPLATE") == "app") {
         t << "\t\t\t\t" << writeSettings("PRODUCT_NAME", fixForOutput(project->first("QMAKE_ORIG_TARGET").toQString())) << ";" << "\n";
     } else {
@@ -1393,6 +1392,10 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
               << "\t\t\t" << "buildSettings = {" << "\n";
             for (QMap<QString, QString>::Iterator set_it = settings.begin(); set_it != settings.end(); ++set_it)
                 t << "\t\t\t\t" << writeSettings(set_it.key(), set_it.value()) << ";\n";
+            if (!project->isEmpty("PRECOMPILED_HEADER")) {
+                t << "\t\t\t\t" << writeSettings("GCC_PRECOMPILE_PREFIX_HEADER", "YES") << ";" << "\n"
+                << "\t\t\t\t" << writeSettings("GCC_PREFIX_HEADER", escapeFilePath(project->first("PRECOMPILED_HEADER"))) << ";" << "\n";
+            }
             if (buildConfigGroups.at(i) == QLatin1String("PROJECT")) {
                 t << "\t\t\t\t" << writeSettings("HEADER_SEARCH_PATHS", fixListForOutput("INCLUDEPATH") + ProStringList(fixForOutput(specdir())), SettingsAsList, 5) << ";" << "\n"
                   << "\t\t\t\t" << writeSettings("LIBRARY_SEARCH_PATHS", fixListForOutput("QMAKE_PBX_LIBPATHS"), SettingsAsList, 5) << ";" << "\n"
@@ -1429,6 +1432,8 @@ ProjectBuilderMakefileGenerator::writeMakeParts(QTextStream &t)
                 const ProStringList &archs = project->values("QT_ARCH");
                 if (!archs.isEmpty())
                     t << "\t\t\t\t" << writeSettings("ARCHS", archs) << ";" << "\n";
+                if (!project->isEmpty("OBJECTS_DIR"))
+                    t << "\t\t\t\t" << writeSettings("OBJROOT", escapeFilePath(project->first("OBJECTS_DIR").toQString())) << ";" << "\n";
             } else {
                 if (project->first("TEMPLATE") == "app") {
                     t << "\t\t\t\t" << writeSettings("PRODUCT_NAME", fixForOutput(project->first("QMAKE_ORIG_TARGET").toQString())) << ";" << "\n";

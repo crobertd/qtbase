@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -373,7 +373,7 @@ bool BaselineProtocol::connect(const QString &testCase, bool *dryrun, const Plat
     errMsg.clear();
     QByteArray serverName(qgetenv("QT_LANCELOT_SERVER"));
     if (serverName.isNull())
-        serverName = "lancelot.test.qt.nokia.com";
+        serverName = "lancelot.test.qt-project.org";
 
     socket.connectToHost(serverName, ServerPort);
     if (!socket.waitForConnected(Timeout)) {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -216,7 +216,7 @@ QWindow::~QWindow()
 }
 
 /*!
-    Set the \a surfaceType of the window.
+    Sets the \a surfaceType of the window.
 
     Specifies whether the window is meant for raster rendering with
     QBackingStore, or OpenGL rendering with QOpenGLContext.
@@ -593,7 +593,7 @@ QString QWindow::filePath() const
 }
 
 /*!
-    \brief set the window's \a icon in the windowing system
+    \brief Sets the window's \a icon in the windowing system
 
     The window icon might be used by the windowing system for example to
     decorate the window, and/or in the task switcher.
@@ -607,7 +607,7 @@ void QWindow::setIcon(const QIcon &icon)
 }
 
 /*!
-    \brief set the window's icon in the windowing system
+    \brief Sets the window's icon in the windowing system
 
     \sa setIcon()
 */
@@ -654,9 +654,11 @@ void QWindow::lower()
 void QWindow::setOpacity(qreal level)
 {
     Q_D(QWindow);
-    if (d->platformWindow) {
+    if (level == d->opacity) // #fixme: Add property for 5.1
+        return;
+    d->opacity = level;
+    if (d->platformWindow)
         d->platformWindow->setOpacity(level);
-    }
 }
 
 /*!
@@ -763,8 +765,7 @@ Qt::ScreenOrientation QWindow::contentOrientation() const
 
     Common values are 1.0 on normal displays and 2.0 on Apple "retina" displays.
 
-    \sa QWindow::devicePixelRatio();
-    \sa QGuiApplicaiton::devicePixelRatio();
+    \sa QScreen::devicePixelRatio(), QGuiApplication::devicePixelRatio()
 */
 qreal QWindow::devicePixelRatio() const
 {
@@ -1103,16 +1104,16 @@ void QWindow::setGeometry(const QRect &rect)
         d->platformWindow->setGeometry(rect);
     } else {
         d->geometry = rect;
-    }
 
-    if (rect.x() != oldRect.x())
-        emit xChanged(rect.x());
-    if (rect.y() != oldRect.y())
-        emit yChanged(rect.y());
-    if (rect.width() != oldRect.width())
-        emit widthChanged(rect.width());
-    if (rect.height() != oldRect.height())
-        emit heightChanged(rect.height());
+        if (rect.x() != oldRect.x())
+            emit xChanged(rect.x());
+        if (rect.y() != oldRect.y())
+            emit yChanged(rect.y());
+        if (rect.width() != oldRect.width())
+            emit widthChanged(rect.width());
+        if (rect.height() != oldRect.height())
+            emit heightChanged(rect.height());
+    }
 }
 
 /*!
@@ -1185,7 +1186,7 @@ void QWindow::setFramePosition(const QPoint &point)
     if (d->platformWindow) {
         d->platformWindow->setGeometry(QRect(point, size()));
     } else {
-        d->geometry.setTopLeft(point);
+        d->geometry.moveTopLeft(point);
     }
 }
 
@@ -1211,14 +1212,14 @@ void QWindow::setPosition(int posx, int posy)
 
 /*!
     \fn QPoint QWindow::position() const
-    \brief get the position of the window on the desktop excluding any window frame
+    \brief Returns the position of the window on the desktop excluding any window frame
 
     \sa setPosition()
 */
 
 /*!
     \fn QSize QWindow::size() const
-    \brief get the size of the window excluding any window frame
+    \brief Returns the size of the window excluding any window frame
 
     \sa resize()
 */
@@ -1297,7 +1298,7 @@ QPlatformSurface *QWindow::surfaceHandle() const
 }
 
 /*!
-    Set whether keyboard grab should be enabled or not (\a grab).
+    Sets whether keyboard grab should be enabled or not (\a grab).
 
     If the return value is true, the window receives all key events until
     setKeyboardGrabEnabled(false) is called; other windows get no key events at

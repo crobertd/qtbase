@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the qmake application of the Qt Toolkit.
@@ -69,7 +69,7 @@ public:
 
     virtual bool init() = 0;
     virtual int type() const { return -1; }
-    virtual bool write(const QString &oldpwd) = 0;
+    virtual bool write() = 0;
 };
 
 QT_END_NAMESPACE

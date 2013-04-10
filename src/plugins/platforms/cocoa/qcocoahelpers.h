@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -158,8 +158,9 @@ public:
     }
 };
 
-CGContextRef qt_mac_cg_context(const QPaintDevice *pdev);
+CGContextRef qt_mac_cg_context(QPaintDevice *pdev);
 CGImageRef qt_mac_toCGImage(const QImage &qImage, bool isMask, uchar **dataCopy);
+QImage qt_mac_toQImage(CGImageRef image);
 
 QT_END_NAMESPACE
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -81,10 +81,6 @@
 #include <qfontdatabase.h>
 
 Q_DECLARE_METATYPE(QGradientStops)
-Q_DECLARE_METATYPE(QLine)
-Q_DECLARE_METATYPE(QRect)
-Q_DECLARE_METATYPE(QSize)
-Q_DECLARE_METATYPE(QPoint)
 Q_DECLARE_METATYPE(QPainterPath)
 
 class tst_QPainter : public QObject
@@ -229,6 +225,7 @@ private slots:
     void drawImage_task217400();
     void drawImage_1x1();
     void drawImage_task258776();
+    void drawImage_QTBUG28324();
     void drawRect_task215378();
     void drawRect_task247505();
 
@@ -283,6 +280,9 @@ private slots:
     void drawTextWithComplexBrush();
     void QTBUG26013_squareCapStroke();
     void QTBUG25153_drawLine();
+
+    void cosmeticStrokerClipping_data();
+    void cosmeticStrokerClipping();
 
 private:
     void fillData();
@@ -364,13 +364,6 @@ void tst_QPainter::getSetCheck()
     QCOMPARE(true, obj1.viewTransformEnabled());
 }
 
-Q_DECLARE_METATYPE(QPixmap)
-Q_DECLARE_METATYPE(QPolygon)
-Q_DECLARE_METATYPE(QBrush)
-Q_DECLARE_METATYPE(QPen)
-Q_DECLARE_METATYPE(QFont)
-Q_DECLARE_METATYPE(QColor)
-Q_DECLARE_METATYPE(QRegion)
 
 tst_QPainter::tst_QPainter()
 {
@@ -3233,6 +3226,25 @@ void tst_QPainter::drawImage_task258776()
     QCOMPARE(dest, expected);
 }
 
+void tst_QPainter::drawImage_QTBUG28324()
+{
+    QImage dest(512, 512, QImage::Format_ARGB32_Premultiplied);
+    dest.fill(0x0);
+
+    int x = 263; int y = 89; int w = 61; int h = 39;
+
+    QImage source(w, h, QImage::Format_ARGB32_Premultiplied);
+    quint32 *b = (quint32 *)source.bits();
+    for (int j = 0; j < w * h; ++j)
+        b[j] = 0x7f7f7f7f;
+
+    // nothing to test here since the bug is about
+    // an invalid memory read, which valgrind
+    // would complain about
+    QPainter p(&dest);
+    p.drawImage(x, y, source);
+}
+
 void tst_QPainter::clipRectSaveRestore()
 {
     QImage img(64, 64, QImage::Format_ARGB32_Premultiplied);
@@ -4450,6 +4462,77 @@ void tst_QPainter::QTBUG25153_drawLine()
         QCOMPARE(image.pixel(0, 1), 0xffffffff);
         QCOMPARE(image.pixel(1, 0), 0xffffffff);
     }
+}
+
+enum CosmeticStrokerPaint
+{
+    Antialiasing,
+    Dashing
+};
+
+static void paint_func(QPainter *p, CosmeticStrokerPaint type)
+{
+    p->save();
+    switch (type) {
+    case Antialiasing:
+        p->setPen(Qt::black);
+        p->setRenderHint(QPainter::Antialiasing);
+        p->drawLine(4, 8, 42, 42);
+        break;
+    case Dashing:
+        p->setPen(QPen(Qt::black, 1, Qt::DashLine, Qt::RoundCap, Qt::MiterJoin));
+        p->drawLine(8, 8, 42, 8);
+        p->drawLine(42, 8, 42, 42);
+        p->drawLine(42, 42, 8, 42);
+        p->drawLine(8, 42, 8, 8);
+        break;
+    default:
+        Q_ASSERT(false);
+        break;
+    }
+    p->restore();
+}
+
+Q_DECLARE_METATYPE(CosmeticStrokerPaint)
+
+void tst_QPainter::cosmeticStrokerClipping_data()
+{
+    QTest::addColumn<CosmeticStrokerPaint>("paint");
+
+    QTest::newRow("antialiasing_paint") << Antialiasing;
+    QTest::newRow("dashing_paint") << Dashing;
+}
+
+void tst_QPainter::cosmeticStrokerClipping()
+{
+    QFETCH(CosmeticStrokerPaint, paint);
+
+    QImage image(50, 50, QImage::Format_RGB32);
+    image.fill(Qt::white);
+
+    QPainter p(&image);
+    paint_func(&p, paint);
+    p.end();
+
+    QImage old = image.copy();
+
+    image.paintEngine()->setSystemClip(QRect(10, 0, image.width() - 10, image.height()));
+
+    p.begin(&image);
+    p.fillRect(image.rect(), Qt::white);
+    paint_func(&p, paint);
+
+    // doing same paint operation again with different system clip should not change the image
+    QCOMPARE(old, image);
+
+    old = image;
+
+    p.setClipRect(QRect(20, 20, 30, 30));
+    p.fillRect(image.rect(), Qt::white);
+    paint_func(&p, paint);
+
+    // ditto for regular clips
+    QCOMPARE(old, image);
 }
 
 QTEST_MAIN(tst_QPainter)

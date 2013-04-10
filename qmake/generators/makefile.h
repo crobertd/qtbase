@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the qmake application of the Qt Toolkit.
@@ -81,7 +81,7 @@ class MakefileGenerator : protected QMakeSourceFileInfo
     QString spec;
     bool init_opath_already, init_already, no_io;
     QHash<QString, bool> init_compiler_already;
-    QString chkdir, chkfile, chkglue;
+    QString makedir, chkexists;
     QString build_args(const QString &outdir=QString());
 
     //internal caches
@@ -247,6 +247,8 @@ protected:
                            const QString &in_dir=QString(), FileFixifyType fix=FileFixifyDefault, bool canon=true) const;
     inline QStringList fileFixify(const QStringList& files, FileFixifyType fix, bool canon=true) const
     { return fileFixify(files, QString(), QString(), fix, canon); }
+
+    QString installMetaFile(const ProKey &replace_rule, const QString &src, const QString &dst);
 
 public:
     MakefileGenerator();

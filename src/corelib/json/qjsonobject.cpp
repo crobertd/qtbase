@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -390,13 +390,14 @@ QJsonValue QJsonObject::take(const QString &key)
     if (!keyExists)
         return QJsonValue(QJsonValue::Undefined);
 
-    QJsonPrivate::Entry *e = o->entryAt(index);
+    QJsonValue v(d, o, o->entryAt(index)->value);
+    detach();
     o->removeItems(index, 1);
     ++d->compactionCounter;
     if (d->compactionCounter > 32u && d->compactionCounter >= unsigned(o->length) / 2u)
         compact();
 
-    return QJsonValue(d, o, e->value);
+    return v;
 }
 
 /*!

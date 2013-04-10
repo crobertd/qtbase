@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -229,7 +229,7 @@ QTransform QPainterPrivate::hidpiScaleTransform() const
 {
 #ifdef Q_OS_MAC
     // Limited feature introduction for Qt 5.0.0, remove ifdef in a later release.
-    if (device->physicalDpiX() == 0 || device->logicalDpiX() == 0)
+    if (device->devType() == QInternal::Printer || device->physicalDpiX() == 0 || device->logicalDpiX() == 0)
         return QTransform();
     const qreal deviceScale = (device->physicalDpiX() / device->logicalDpiX());
     if (deviceScale > 1.0)
@@ -1387,7 +1387,7 @@ void QPainterPrivate::updateState(QPainterState *newState)
     cases where expensive operations are ok to use, for instance when
     the result is cached in a QPixmap.
 
-    \sa QPaintDevice, QPaintEngine, {QtSvg Module}, {Basic Drawing Example},
+    \sa QPaintDevice, QPaintEngine, {Qt SVG}, {Basic Drawing Example},
         {Drawing Utility Functions}
 */
 
@@ -1843,7 +1843,7 @@ bool QPainter::begin(QPaintDevice *pd)
 
 #ifdef Q_OS_MAC
     // Limited feature introduction for Qt 5.0.0, remove ifdef in a later release.
-    const bool isHighDpi = (d->device->physicalDpiX() == 0 || d->device->logicalDpiX() == 0) ?
+    const bool isHighDpi = (pd->devType() == QInternal::Printer || d->device->physicalDpiX() == 0 || d->device->logicalDpiX() == 0) ?
                            false : (d->device->physicalDpiX() / d->device->logicalDpiX() > 1);
 #else
     const bool isHighDpi = false;

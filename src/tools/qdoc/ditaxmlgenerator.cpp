@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -4198,7 +4198,10 @@ void DitaXmlGenerator::generateQmlInherits(const QmlClassNode* qcn, CodeMarker* 
 {
     if (!qcn)
         return;
-    const DocNode* base = qcn->qmlBase();
+    const QmlClassNode* base = qcn->qmlBaseNode();
+    while (base && base->isInternal()) {
+        base = base->qmlBaseNode();
+    }
     if (base) {
         writeStartTag(DT_qmlInherits);
         //writeStartTag(DT_qmlTypeDef);

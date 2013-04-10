@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -71,10 +71,6 @@
     Here is an example of putting a QPushButton into a NSWindow:
 
     \snippet qmacnativewidget/main.mm 0
-
-    On Carbon, this would do the equivalent:
-
-    \snippet qmacnativewidget/main.mm 1
 
     Note that QMacNativeWidget requires knowledge of Carbon or Cocoa. All it
     does is get the Qt hierarchy into a window not owned by Qt. It is then up

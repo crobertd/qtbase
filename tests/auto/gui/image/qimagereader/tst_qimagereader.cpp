@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -57,13 +57,6 @@
 
 typedef QMap<QString, QString> QStringMap;
 typedef QList<int> QIntList;
-Q_DECLARE_METATYPE(QImage)
-Q_DECLARE_METATYPE(QRect)
-Q_DECLARE_METATYPE(QSize)
-Q_DECLARE_METATYPE(QColor)
-Q_DECLARE_METATYPE(QStringMap)
-Q_DECLARE_METATYPE(QIntList)
-Q_DECLARE_METATYPE(QIODevice *)
 Q_DECLARE_METATYPE(QImage::Format)
 
 class tst_QImageReader : public QObject
@@ -229,6 +222,7 @@ void tst_QImageReader::readImage_data()
     QTest::newRow("BMP: 4bpp uncompressed") << QString("tst7.bmp") << true << QByteArray("bmp");
     QTest::newRow("BMP: 16bpp") << QString("16bpp.bmp") << true << QByteArray("bmp");
     QTest::newRow("BMP: negative height") << QString("negativeheight.bmp") << true << QByteArray("bmp");
+    QTest::newRow("BMP: high mask bit set") << QString("rgb32bf.bmp") << true << QByteArray("bmp");
     QTest::newRow("XPM: marble") << QString("marble.xpm") << true << QByteArray("xpm");
     QTest::newRow("PNG: kollada") << QString("kollada.png") << true << QByteArray("png");
     QTest::newRow("PPM: teapot") << QString("teapot.ppm") << true << QByteArray("ppm");

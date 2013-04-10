@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -46,6 +46,8 @@
 #include <QtCore/qvarlengtharray.h>
 
 #include <stdlib.h> // for realpath()
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
@@ -174,9 +176,16 @@ QFileSystemEntry QFileSystemEngine::canonicalName(const QFileSystemEntry &entry,
 #else
     char *ret = 0;
 # if defined(Q_OS_MAC) && !defined(Q_OS_IOS)
-    // Mac OS X 10.5.x doesn't support the realpath(X,0) extension we use here.
+    // When using -mmacosx-version-min=10.4, we get the legacy realpath implementation,
+    // which does not work properly with the realpath(X,0) form. See QTBUG-28282.
     if (QSysInfo::MacintoshVersion >= QSysInfo::MV_10_6) {
-        ret = realpath(entry.nativeFilePath().constData(), (char*)0);
+        ret = (char*)malloc(PATH_MAX + 1);
+        if (ret && realpath(entry.nativeFilePath().constData(), (char*)ret) == 0) {
+            const int savedErrno = errno; // errno is checked below, and free() might change it
+            free(ret);
+            errno = savedErrno;
+            ret = 0;
+        }
     } else {
         // on 10.5 we can use FSRef to resolve the file path.
         QString path = QDir::cleanPath(entry.filePath());
@@ -249,6 +258,20 @@ QFileSystemEntry QFileSystemEngine::absoluteName(const QFileSystemEntry &entry)
     if (isDir)
         stringVersion.append(QLatin1Char('/'));
     return QFileSystemEntry(stringVersion);
+}
+
+//static
+QByteArray QFileSystemEngine::id(const QFileSystemEntry &entry)
+{
+    struct stat statResult;
+    if (stat(entry.nativeFilePath().constData(), &statResult)) {
+        qErrnoWarning("stat() failed for '%s'", entry.nativeFilePath().constData());
+        return QByteArray();
+    }
+    QByteArray result = QByteArray::number(quint64(statResult.st_dev), 16);
+    result += ':';
+    result += QByteArray::number(quint64(statResult.st_ino));
+    return result;
 }
 
 //static
@@ -610,7 +633,7 @@ bool QFileSystemEngine::setPermissions(const QFileSystemEntry &entry, QFile::Per
 QString QFileSystemEngine::homePath()
 {
     QString home = QFile::decodeName(qgetenv("HOME"));
-    if (home.isNull())
+    if (home.isEmpty())
         home = rootPath();
     return QDir::cleanPath(home);
 }

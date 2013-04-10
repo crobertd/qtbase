@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -247,7 +247,7 @@ static bool addFontToDatabase(QString familyName, const QString &scriptName,
 
     value = fontCache.value(faceName);
 
-    //Fallback if we havent cached the font yet or the font got removed/renamed iterate again over all fonts
+    //Fallback if we haven't cached the font yet or the font got removed/renamed iterate again over all fonts
     if (value.isEmpty() || !QFile::exists(value)) {
         QSettings settings(QSettings::SystemScope, QStringLiteral("Qt-Project"), QStringLiteral("Qtbase"));
         settings.beginGroup(QStringLiteral("CEFontCache"));

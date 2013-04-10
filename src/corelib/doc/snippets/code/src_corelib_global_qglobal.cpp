@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -535,7 +535,7 @@ CApaApplication *myApplicationFactory();
 
 
 //! [49]
-void myMessageHandler(QtMsgType, const QMessageLogContext &, const char *);
+void myMessageHandler(QtMsgType, const QMessageLogContext &, const QString &);
 //! [49]
 
 //! [50]
@@ -598,3 +598,13 @@ bool readConfiguration(const QFile &file)
            break;
    }
 //! [qunreachable-switch]
+
+//! [qt-version-check]
+#include <QtGlobal>
+
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 0, 0))
+#include <QtWidgets>
+#else
+#include <QtGui>
+#endif
+//! [qt-version-check]

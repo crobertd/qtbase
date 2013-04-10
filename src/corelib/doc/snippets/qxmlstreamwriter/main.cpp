@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -61,8 +61,8 @@ int main(int argc, char *argv[])
     stream.writeAttribute("folded", "no");
 //! [write element]
     stream.writeStartElement("bookmark");
-    stream.writeAttribute("href", "http://qt.nokia.com/");
-    stream.writeTextElement("title", "Qt Home");
+    stream.writeAttribute("href", "http://qt-project.org/");
+    stream.writeTextElement("title", "Qt Project");
     stream.writeEndElement(); // bookmark
 //! [write element]
     stream.writeEndElement(); // folder

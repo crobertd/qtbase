@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -749,7 +749,7 @@ void QCoreApplication::setQuitLockEnabled(bool enabled)
 */
 bool QCoreApplication::notifyInternal(QObject *receiver, QEvent *event)
 {
-    // Make it possible for QtScript to hook into events even
+    // Make it possible for Qt Script to hook into events even
     // though QApplication is subclassed...
     bool result = false;
     void *cbdata[] = { receiver, event, &result };

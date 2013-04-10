@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -577,9 +577,10 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::accLocation(long *pxLeft, long
 
     QRect rect;
     if (varID.lVal) {
-        QAIPointer child = QAIPointer(accessible->child(varID.lVal - 1));
-        if (child->isValid())
-            rect = child->rect();
+        QAIPointer child(childPointer(varID));
+        if (!child)
+            return E_FAIL;
+        rect = child->rect();
     } else {
         rect = accessible->rect();
     }
@@ -767,9 +768,11 @@ HRESULT STDMETHODCALLTYPE QWindowsMsaaAccessible::get_accChild(VARIANT varChildI
             // actually ask for the same object. As a consequence, we need to clone ourselves:
             if (QAccessibleInterface *par = accessible->parent()) {
                 const int indexOf = par->indexOfChild(accessible);
-                QAccessibleInterface *clone = par->child(indexOf);
+                if (indexOf == -1)
+                    qWarning() << "inconsistent hierarchy, parent:" << par << "child:" << accessible;
+                else
+                    acc = par->child(indexOf);
                 delete par;
-                acc = clone;
             }
         }
     }

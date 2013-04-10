@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the qmake application of the Qt Toolkit.
@@ -92,18 +92,8 @@ bool MakefileGenerator::canExecute(const QStringList &cmdline, int *a) const
 
 QString MakefileGenerator::mkdir_p_asstring(const QString &dir, bool escape) const
 {
-    QString ret =  "@" + chkdir + " ";
-    if(escape)
-        ret += escapeFilePath(dir);
-    else
-        ret += dir;
-    ret += " " + chkglue + "$(MKDIR) ";
-    if(escape)
-        ret += escapeFilePath(dir);
-    else
-        ret += dir;
-    ret += " ";
-    return ret;
+    QString edir = escape ? escapeFilePath(dir) : dir;
+    return "@" + makedir.arg(edir);
 }
 
 bool MakefileGenerator::mkdir(const QString &in_path) const
@@ -223,8 +213,8 @@ MakefileGenerator::initOutPaths()
     //some builtin directories
     if(project->isEmpty("PRECOMPILED_DIR") && !project->isEmpty("OBJECTS_DIR"))
         v["PRECOMPILED_DIR"] = v["OBJECTS_DIR"];
-    static const char * const dirs[] = { "OBJECTS_DIR", "DESTDIR", "QMAKE_PKGCONFIG_DESTDIR",
-                                         "SUBLIBS_DIR", "DLLDESTDIR", "QMAKE_LIBTOOL_DESTDIR",
+    static const char * const dirs[] = { "OBJECTS_DIR", "DESTDIR",
+                                         "SUBLIBS_DIR", "DLLDESTDIR",
                                          "PRECOMPILED_DIR", 0 };
     for (int x = 0; dirs[x]; x++) {
         const ProKey dkey(dirs[x]);
@@ -440,13 +430,17 @@ MakefileGenerator::init()
     if (v["TARGET"].isEmpty())
         warn_msg(WarnLogic, "TARGET is empty");
 
-    chkdir = v["QMAKE_CHK_DIR_EXISTS"].join(' ');
-    chkfile = v["QMAKE_CHK_FILE_EXISTS"].join(' ');
-    if (chkfile.isEmpty()) // Backwards compat with Qt4 specs
-        chkfile = isWindowsShell() ? "if not exist" : "test -f";
-    chkglue = v["QMAKE_CHK_EXISTS_GLUE"].join(' ');
-    if (chkglue.isEmpty()) // Backwards compat with Qt4 specs
-        chkglue = isWindowsShell() ? "" : "|| ";
+    makedir = v["QMAKE_MKDIR_CMD"].join(' ');
+    chkexists = v["QMAKE_CHK_EXISTS"].join(' ');
+    if (makedir.isEmpty()) { // Backwards compat with Qt < 5.0.2 specs
+        if (isWindowsShell()) {
+            makedir = "if not exist %1 mkdir %1 & if not exist %1 exit 1";
+            chkexists = "if not exist %1";
+        } else {
+            makedir = "test -d %1 || mkdir -p %1";
+            chkexists = "test -e %1 ||";
+        }
+    }
 
     ProStringList &quc = v["QMAKE_EXTRA_COMPILERS"];
 
@@ -2398,8 +2392,8 @@ MakefileGenerator::writeSubTargetCall(QTextStream &t,
     if (!in.isEmpty()) {
         if (!in_directory.isEmpty())
             t << "\n\t" << mkdir_p_asstring(out_directory);
-        pfx = "( " + chkfile + " " + out + " " + chkglue
-              + "$(QMAKE) " + in + buildArgs() + " -o " + out
+        pfx = "( " + chkexists.arg(out) +
+              + " $(QMAKE) " + in + buildArgs() + " -o " + out
               + " ) && ";
     }
     writeSubMakeCall(t, out_directory_cdin + pfx, makefilein);
@@ -3110,15 +3104,18 @@ MakefileGenerator::openOutput(QFile &file, const QString &build) const
 QString
 MakefileGenerator::pkgConfigFileName(bool fixify)
 {
-    QString ret = var("TARGET");
-    int slsh = ret.lastIndexOf(Option::dir_sep);
-    if(slsh != -1)
-        ret = ret.right(ret.length() - slsh - 1);
-    if(ret.startsWith("lib"))
-        ret = ret.mid(3);
-    int dot = ret.indexOf('.');
-    if(dot != -1)
-        ret = ret.left(dot);
+    QString ret = project->first("QMAKE_PKGCONFIG_FILE").toQString();
+    if (ret.isEmpty()) {
+        ret = project->first("TARGET").toQString();
+        int slsh = ret.lastIndexOf(Option::dir_sep);
+        if (slsh != -1)
+            ret = ret.right(ret.length() - slsh - 1);
+        if (ret.startsWith("lib"))
+            ret = ret.mid(3);
+        int dot = ret.indexOf('.');
+        if (dot != -1)
+            ret = ret.left(dot);
+    }
     ret += Option::pkgcfg_ext;
     QString subdir = project->first("QMAKE_PKGCONFIG_DESTDIR").toQString();
     if(!subdir.isEmpty()) {
@@ -3155,11 +3152,8 @@ MakefileGenerator::pkgConfigFixPath(QString path) const
 void
 MakefileGenerator::writePkgConfigFile()
 {
-    QString fname = pkgConfigFileName(), lname = fname;
+    QString fname = pkgConfigFileName();
     mkdir(fileInfo(fname).path());
-    int slsh = lname.lastIndexOf(Option::dir_sep);
-    if(slsh != -1)
-        lname = lname.right(lname.length() - slsh - 1);
     QFile ft(fname);
     if(!ft.open(QIODevice::WriteOnly))
         return;
@@ -3246,7 +3240,7 @@ MakefileGenerator::writePkgConfigFile()
         pkgConfiglibName = "-framework " + bundle + " ";
     } else {
         pkgConfiglibDir = "-L${libdir}";
-        pkgConfiglibName = "-l" + lname.left(lname.length()-Option::libtool_ext.length());
+        pkgConfiglibName = "-l" + fileInfo(fname).completeBaseName();
         if (project->isActiveConfig("shared"))
             pkgConfiglibName += project->first("TARGET_VERSION_EXT").toQString();
     }
@@ -3283,6 +3277,27 @@ MakefileGenerator::writePkgConfigFile()
     }
 
     t << endl;
+}
+
+QString MakefileGenerator::installMetaFile(const ProKey &replace_rule, const QString &src, const QString &dst)
+{
+    QString ret;
+    if (project->isEmpty(replace_rule)
+        || project->isActiveConfig("no_sed_meta_install")
+        || project->isEmpty("QMAKE_STREAM_EDITOR")) {
+        ret += "-$(INSTALL_FILE) \"" + src + "\" \"" + dst + "\"";
+    } else {
+        ret += "-$(SED)";
+        const ProStringList &replace_rules = project->values(replace_rule);
+        for (int r = 0; r < replace_rules.size(); ++r) {
+            const ProString match = project->first(ProKey(replace_rules.at(r) + ".match")),
+                        replace = project->first(ProKey(replace_rules.at(r) + ".replace"));
+            if (!match.isEmpty() /*&& match != replace*/)
+                ret += " -e \"s," + match + "," + replace + ",g\"";
+        }
+        ret += " \"" + src + "\" >\"" + dst + "\"";
+    }
+    return ret;
 }
 
 QT_END_NAMESPACE

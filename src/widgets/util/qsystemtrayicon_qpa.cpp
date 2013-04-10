@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -68,7 +68,7 @@ void QSystemTrayIconPrivate::install_sys()
     if (qpa_sys) {
         qpa_sys->init();
         QObject::connect(qpa_sys, SIGNAL(activated(QPlatformSystemTrayIcon::ActivationReason)),
-                         q_func(), SLOT(emitActivated(QPlatformSystemTrayIcon::ActivationReason)));
+                         q_func(), SLOT(_q_emitActivated(QPlatformSystemTrayIcon::ActivationReason)));
         QObject::connect(qpa_sys, SIGNAL(messageClicked()),
                          q_func(), SIGNAL(messageClicked()));
         updateMenu_sys();

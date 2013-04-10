@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -69,6 +69,14 @@
         } \
         QCOMPARE(expr, expected); \
     } while(0)
+
+static inline void setFrameless(QWidget *w)
+{
+    Qt::WindowFlags flags = w->windowFlags();
+    flags |= Qt::FramelessWindowHint;
+    flags &= ~(Qt::WindowTitleHint | Qt::WindowSystemMenuHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint);
+    w->setWindowFlags(flags);
+}
 
 class TestView : public QAbstractItemView
 {
@@ -621,6 +629,7 @@ void tst_QAbstractItemView::noModel()
 
     QStandardItemModel model(20,20);
     QTreeView view;
+    setFrameless(&view);
 
     view.setModel(&model);
     // Make the viewport smaller than the contents, so that we can scroll
@@ -989,7 +998,6 @@ public:
 };
 
 typedef QList<int> IntList;
-Q_DECLARE_METATYPE(IntList)
 
 void tst_QAbstractItemView::setItemDelegate_data()
 {
