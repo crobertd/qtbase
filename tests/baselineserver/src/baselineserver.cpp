@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -691,8 +691,8 @@ void BaselineHandler::testPathMapping()
     QStringList hosts;
     hosts << QLS("bq-ubuntu910-x86-01")
           << QLS("bq-ubuntu910-x86-15")
-          << QLS("osl-mac-master-5.test.qt.nokia.com")
-          << QLS("osl-mac-master-6.test.qt.nokia.com")
+          << QLS("osl-mac-master-5.test.qt-project.org")
+          << QLS("osl-mac-master-6.test.qt-project.org")
           << QLS("sv-xp-vs-010")
           << QLS("sv-xp-vs-011")
           << QLS("sv-solaris-sparc-008")

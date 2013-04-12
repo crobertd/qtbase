@@ -1,3 +1,5 @@
+requires(qtHaveModule(opengl))
+
 TEMPLATE      = subdirs
 
 contains(QT_CONFIG, opengles1)|contains(QT_CONFIG, opengles2){
@@ -26,5 +28,3 @@ SUBDIRS += hellowindow \
            paintedwindow
 
 EXAMPLE_FILES = shared
-
-QT += widgets

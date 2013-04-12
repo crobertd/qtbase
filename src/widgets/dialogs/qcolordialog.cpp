@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -1735,8 +1735,9 @@ QColor QColorDialog::selectedColor() const
 */
 void QColorDialog::setOption(ColorDialogOption option, bool on)
 {
-    Q_D(QColorDialog);
-    d->options->setOption(static_cast<QColorDialogOptions::ColorDialogOption>(option), on);
+    const QColorDialog::ColorDialogOptions previousOptions = options();
+    if (!(previousOptions & option) != !on)
+        setOptions(previousOptions ^ option);
 }
 
 /*!

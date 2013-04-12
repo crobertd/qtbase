@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -31,6 +31,7 @@
     can be painted on with QPainter.
 
     \ingroup painting
+    \inmodule QtGui
 
     A paint device is an abstraction of a two-dimensional space that
     can be drawn on using a QPainter.  Its default coordinate system has

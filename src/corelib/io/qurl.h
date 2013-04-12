@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2012 Intel Corporation.
 ** Contact: http://www.qt-project.org/legal
 **
@@ -154,7 +154,7 @@ public:
         FullyDecoded = FullyEncoded | DecodeReserved | 0x4000000
     };
     Q_DECLARE_FLAGS(ComponentFormattingOptions, ComponentFormattingOption)
-#ifdef qdoc
+#ifdef Q_QDOC
     Q_DECLARE_FLAGS(FormattingOptions, UrlFormattingOption)
 #else
     typedef QUrlTwoFlags<UrlFormattingOption, ComponentFormattingOption> FormattingOptions;

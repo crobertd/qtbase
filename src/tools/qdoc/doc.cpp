@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -439,6 +439,8 @@ bool DocPrivate::isEnumDocSimplifiable() const
 
 class DocParser
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::DocParser)
+
 public:
     void parse(const QString &source,
                DocPrivate *docPrivate,

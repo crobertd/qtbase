@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -67,6 +67,7 @@ class Q_CORE_EXPORT QLocale
     Q_GADGET
     Q_ENUMS(Language)
     Q_ENUMS(Country)
+    Q_ENUMS(MeasurementSystem)
     friend class QString;
     friend class QByteArray;
     friend class QIntValidator;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#ifndef QT_NO_ACCESSIBILITY
 #ifndef QACCESSIBLE_H
 #define QACCESSIBLE_H
 
@@ -64,7 +65,7 @@ class QWindow;
 
 // We need to inherit QObject to expose the enums to QML.
 class Q_GUI_EXPORT QAccessible
-#ifndef qdoc
+#ifndef Q_QDOC
         :public QObject
 #endif
 {
@@ -269,7 +270,7 @@ public:
         StaticText     = 0x00000029,
         EditableText   = 0x0000002A,  // Editable, selectable, etc.
         Button         = 0x0000002B,
-#ifndef qdoc
+#ifndef Q_QDOC
         PushButton     = Button, // deprecated
 #endif
         CheckBox       = 0x0000002C,
@@ -284,10 +285,10 @@ public:
         Canvas         = 0x00000035,
         Animation      = 0x00000036,
         Equation       = 0x00000037,
-        ButtonDropDown = 0x00000038,
+        ButtonDropDown = 0x00000038, // The object represents a button that expands a grid.
         ButtonMenu     = 0x00000039,
         ButtonDropGrid = 0x0000003A,
-        Whitespace     = 0x0000003B,
+        Whitespace     = 0x0000003B, // The object represents blank space between other objects.
         PageTabList    = 0x0000003C,
         Clock          = 0x0000003D,
         Splitter       = 0x0000003E,
@@ -681,3 +682,4 @@ QT_END_NAMESPACE
 QT_END_HEADER
 
 #endif // QACCESSIBLE_H
+#endif //!QT_NO_ACCESSIBILITY

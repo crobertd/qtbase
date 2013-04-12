@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -162,7 +162,6 @@ public:
     QAccessible::Role role;
     QString name;
     QStringList primarySignals;
-    const QAccessibleInterface *asking;
 };
 
 /*!
@@ -201,7 +200,6 @@ QAccessibleWidget::QAccessibleWidget(QWidget *w, QAccessible::Role role, const Q
     d = new QAccessibleWidgetPrivate();
     d->role = role;
     d->name = name;
-    d->asking = 0;
 }
 
 /*! \reimp */

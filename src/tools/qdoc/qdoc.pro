@@ -5,9 +5,6 @@ DEFINES += QDOC2_COMPAT
 INCLUDEPATH += $$QT_SOURCE_TREE/src/tools/qdoc \
                $$QT_SOURCE_TREE/src/tools/qdoc/qmlparser
 
-DEPENDPATH += $$QT_SOURCE_TREE/src/tools/qdoc \
-              $$QT_SOURCE_TREE/src/tools/qdoc/qmlparser
-
 # Increase the stack size on MSVC to 4M to avoid a stack overflow
 win32-msvc*:{
     QMAKE_LFLAGS += /STACK:4194304
@@ -91,21 +88,8 @@ SOURCES += jscodemarker.cpp \
 qtPrepareTool(QDOC, qdoc)
 qtPrepareTool(QHELPGENERATOR, qhelpgenerator)
 
-equals(QMAKE_DIR_SEP, /) {
-    QDOC = QT_BUILD_TREE=$$QT_BUILD_TREE QT_SOURCE_TREE=$$QT_SOURCE_TREE $$QDOC
-} else {
-    QDOC = set QT_BUILD_TREE=$$QT_BUILD_TREE&& set QT_SOURCE_TREE=$$QT_SOURCE_TREE&& $$QDOC
-    QDOC = $$replace(QDOC, "/", "\\")
-}
-
-html-docs.commands = $$QDOC $$PWD/doc/config/qdoc.qdocconf
-html-docs.files = $$PWD/doc/html
-
-qch-docs.commands = $$QHELPGENERATOR $$PWD/doc/html/qdoc.qhp -o $$PWD/doc/qch/qdoc.qch
-qch-docs.files = $$PWD/doc/qch
-qch-docs.path = $$[QT_INSTALL_DOCS]
-qch-docs.CONFIG += no_check_exist directory
-
-QMAKE_EXTRA_TARGETS += html-docs qch-docs
+QMAKE_DOCS = $$PWD/doc/config/qdoc.qdocconf
 
 load(qt_tool)
+
+TR_EXCLUDE += $$PWD/*

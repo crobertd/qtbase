@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -72,6 +72,8 @@ typedef QMap<QString, QStringListPair> QStringListPairMap;
 
 class Config
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::Config)
+
 public:
     Config(const QString& programName);
     ~Config();
@@ -186,6 +188,7 @@ private:
 #define CONFIG_INDEXES                  "indexes"
 #define CONFIG_LANGUAGE                 "language"
 #define CONFIG_MACRO                    "macro"
+#define CONFIG_MANIFESTMETA             "manifestmeta"
 #define CONFIG_NATURALLANGUAGE          "naturallanguage"
 #define CONFIG_NOLINKERRORS             "nolinkerrors"
 #define CONFIG_OBSOLETELINKS            "obsoletelinks"

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the FOO module of the Qt Toolkit.
@@ -70,7 +70,7 @@ public:
         BigEndian,
         LittleEndian
 
-#  ifdef qdoc
+#  ifdef Q_QDOC
         , ByteOrder = <platform-dependent>
 #  elif Q_BYTE_ORDER == Q_BIG_ENDIAN
         , ByteOrder = BigEndian

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -71,7 +71,7 @@ static QByteArray normalizeTypeInternal(const char *t, const char *e, bool fixSc
             break;
         }
         /*
-          We musn't convert 'char * const *' into 'const char **'
+          We mustn't convert 'char * const *' into 'const char **'
           and we must beware of 'Bar<const Bla>'.
         */
         if (t[i] == '&' || t[i] == '*' ||t[i] == '<')

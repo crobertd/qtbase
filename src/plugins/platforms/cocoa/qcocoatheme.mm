@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -53,6 +53,7 @@
 #include "qcocoamenuitem.h"
 #include "qcocoamenu.h"
 #include "qcocoamenubar.h"
+#include "qcocoahelpers.h"
 
 #include <QtCore/qfileinfo.h>
 #include <QtGui/private/qguiapplication_p.h>
@@ -136,9 +137,6 @@ const QFont *QCocoaTheme::font(Font type) const
     }
     return m_fonts.value(type, 0);
 }
-
-// Defined in qpaintengine_mac.mm
-extern CGContextRef qt_mac_cg_context(const QPaintDevice *pdev);
 
 //! \internal
 QPixmap qt_mac_convert_iconref(const IconRef icon, int width, int height)

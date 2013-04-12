@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -501,7 +501,7 @@ static inline QProcessEnvironment processEnvironment()
 {
     QProcessEnvironment result;
     insertEnvironmentVariable(QStringLiteral("PATH"), result);
-    // Preserve DISPLAY for X11 as some tests use QtGui.
+    // Preserve DISPLAY for X11 as some tests use Qt GUI.
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
     insertEnvironmentVariable(QStringLiteral("DISPLAY"), result);
 #endif

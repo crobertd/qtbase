@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -108,7 +108,7 @@ QDomElement element4 = document.createElement("MyElement");
 
 
 //! [7]
-<link href="http://qt.nokia.com" color="red" />
+<link href="http://qt-project.org" color="red" />
 //! [7]
 
 
@@ -116,10 +116,10 @@ QDomElement element4 = document.createElement("MyElement");
 QDomElement e = //...
 //...
 QDomAttr a = e.attributeNode("href");
-cout << a.value() << endl;                // prints "http://qt.nokia.com"
-a.setValue("http://qt.nokia.com/doc"); // change the node's attribute
+cout << a.value() << endl;                // prints "http://qt-project.org"
+a.setValue("http://qt-project.org/doc"); // change the node's attribute
 QDomAttr a2 = e.attributeNode("href");
-cout << a2.value() << endl;               // prints "http://qt.nokia.com/doc"
+cout << a2.value() << endl;               // prints "http://qt-project.org/doc"
 //! [8]
 
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -59,8 +59,10 @@
 #include "qwindowsguieventdispatcher.h"
 #ifndef QT_NO_CLIPBOARD
 #  include "qwindowsclipboard.h"
+#  ifndef QT_NO_DRAGANDDROP
+#    include "qwindowsdrag.h"
+#  endif
 #endif
-#include "qwindowsdrag.h"
 #include "qwindowsinputcontext.h"
 #include "qwindowskeymapper.h"
 #  ifndef QT_NO_ACCESSIBILITY
@@ -107,6 +109,9 @@ public:
     Q_INVOKABLE void *createMessageWindow(const QString &classNameTemplate,
                                           const QString &windowName,
                                           void *eventProc) const;
+
+    Q_INVOKABLE QString registerWindowClass(const QString &classNameIn, void *eventProc) const;
+
     bool asyncExpose() const;
     void setAsyncExpose(bool value);
 };
@@ -186,6 +191,15 @@ void *QWindowsNativeInterface::createMessageWindow(const QString &classNameTempl
     return hwnd;
 }
 
+/*!
+    \brief Registers a unique window class with a callback function based on \a classNameIn.
+*/
+
+QString QWindowsNativeInterface::registerWindowClass(const QString &classNameIn, void *eventProc) const
+{
+    return QWindowsContext::instance()->registerWindowClass(classNameIn, (WNDPROC)eventProc);
+}
+
 bool QWindowsNativeInterface::asyncExpose() const
 {
     return QWindowsContext::instance()->asyncExpose();
@@ -254,8 +268,10 @@ struct QWindowsIntegrationPrivate
     QWindowsNativeInterface m_nativeInterface;
 #ifndef QT_NO_CLIPBOARD
     QWindowsClipboard m_clipboard;
-#endif
+#  ifndef QT_NO_DRAGANDDROP
     QWindowsDrag m_drag;
+#  endif
+#endif
     QWindowsGuiEventDispatcher *m_eventDispatcher;
 #if defined(QT_OPENGL_ES_2)
     QEGLStaticContextPtr m_staticEGLContext;
@@ -414,14 +430,14 @@ QPlatformOpenGLContext
 
 #ifdef Q_OS_WINCE
 // It's not easy to detect if we are running a QML application
-// Let's try to do so by checking if the QtQuick module is loaded.
+// Let's try to do so by checking if the Qt Quick module is loaded.
 inline bool isQMLApplication()
 {
-    // check if the QtQuick library is loaded
+    // check if the Qt Quick module is loaded
 #ifdef _DEBUG
-    HMODULE handle = GetModuleHandle(L"QtQuick" QT_LIBINFIX L"d5.dll");
+    HMODULE handle = GetModuleHandle(L"Qt5Quick" QT_LIBINFIX L"d.dll");
 #else
-    HMODULE handle = GetModuleHandle(L"QtQuick" QT_LIBINFIX L"5.dll");
+    HMODULE handle = GetModuleHandle(L"Qt5Quick" QT_LIBINFIX L".dll");
 #endif
     return (handle != NULL);
 }
@@ -517,12 +533,13 @@ QPlatformClipboard * QWindowsIntegration::clipboard() const
 {
     return &d->m_clipboard;
 }
-#endif // !QT_NO_CLIPBOARD
-
+#  ifndef QT_NO_DRAGANDDROP
 QPlatformDrag *QWindowsIntegration::drag() const
 {
     return &d->m_drag;
 }
+#  endif // !QT_NO_DRAGANDDROP
+#endif // !QT_NO_CLIPBOARD
 
 QPlatformInputContext * QWindowsIntegration::inputContext() const
 {

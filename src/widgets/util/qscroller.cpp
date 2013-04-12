@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -234,7 +234,7 @@ private:
 /*!
     \class QScroller
     \brief The QScroller class enables kinetic scrolling for any scrolling widget or graphics item.
-    \since 4.8
+    \since 5.0
 
     \inmodule QtWidgets
  

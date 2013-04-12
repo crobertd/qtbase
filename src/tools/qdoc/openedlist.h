@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -49,11 +49,14 @@
 #include <qstring.h>
 
 #include "location.h"
+#include "tr.h"
 
 QT_BEGIN_NAMESPACE
 
 class OpenedList
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::OpenedList)
+
 public:
     enum Style { Bullet, Tag, Value, Numeric, UpperAlpha, LowerAlpha,
                  UpperRoman, LowerRoman };

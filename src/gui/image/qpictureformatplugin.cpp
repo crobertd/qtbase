@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
     for custom picture format plugins.
 
     \ingroup plugins
+    \inmodule QtGui
 
     The picture format plugin is a simple plugin interface that makes
     it easy to create custom picture formats that can be used

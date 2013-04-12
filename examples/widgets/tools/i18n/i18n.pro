@@ -1,3 +1,5 @@
+QT += widgets
+
 HEADERS       = languagechooser.h \
                 mainwindow.h
 SOURCES       = languagechooser.cpp \
@@ -20,9 +22,7 @@ TRANSLATIONS += translations/i18n_ar.ts \
                 translations/i18n_zh.ts
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/tools/i18n
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/tools/i18n
 INSTALLS += target
-
-QT += widgets
 
 simulator: warning(This example might not fully work on Simulator platform)

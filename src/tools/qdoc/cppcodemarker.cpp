@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -1165,8 +1165,8 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode, Syno
                     }
                     ++c;
                 }
-                if (qcn->qmlBase() != 0) {
-                    qcn = static_cast<const QmlClassNode*>(qcn->qmlBase());
+                if (qcn->qmlBaseNode() != 0) {
+                    qcn = static_cast<const QmlClassNode*>(qcn->qmlBaseNode());
                     if (!qcn->isAbstract())
                         qcn = 0;
                 }
@@ -1241,8 +1241,8 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode, Syno
                     }
                     ++c;
                 }
-                if (qcn->qmlBase() != 0) {
-                    qcn = static_cast<const QmlClassNode*>(qcn->qmlBase());
+                if (qcn->qmlBaseNode() != 0) {
+                    qcn = static_cast<const QmlClassNode*>(qcn->qmlBaseNode());
                     if (!qcn->isAbstract())
                         qcn = 0;
                 }
@@ -1287,17 +1287,15 @@ QList<Section> CppCodeMarker::qmlSections(const QmlClassNode* qmlClassNode, Syno
                     }
                     ++c;
                 }
-                const DocNode* dn = current->qmlBase();
-                if (dn) {
-                    if (dn->subType() == Node::QmlClass)
-                        current = static_cast<const QmlClassNode*>(dn);
-                    else {
-                        dn->doc().location().warning(tr("Base class of QML class '%1' is ambgiguous").arg(current->name()));
-                        current = 0;
-                    }
+                current = current->qmlBaseNode();
+                while (current) {
+                    if (current->isAbstract())
+                        break;
+                    if (current->isInternal())
+                        current = current->qmlBaseNode();
+                    else
+                        break;
                 }
-                else
-                    current = 0;
             }
             append(sections, all, true);
         }

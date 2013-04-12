@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -89,6 +89,7 @@ public:
         , receivedExpose(false)
         , positionPolicy(WindowFrameExclusive)
         , contentOrientation(Qt::PrimaryOrientation)
+        , opacity(qreal(1.0))
         , minimumSize(0, 0)
         , maximumSize(QWINDOWSIZE_MAX, QWINDOWSIZE_MAX)
         , modality(Qt::NonModal)
@@ -119,6 +120,8 @@ public:
         return offset;
     }
 
+    virtual QWindow *eventReceiver() { Q_Q(QWindow); return q; }
+
     QWindow::SurfaceType surfaceType;
     Qt::WindowFlags windowFlags;
     QWindow *parentWindow;
@@ -135,6 +138,7 @@ public:
     bool receivedExpose;
     PositionPolicy positionPolicy;
     Qt::ScreenOrientation contentOrientation;
+    qreal opacity;
 
     QSize minimumSize;
     QSize maximumSize;

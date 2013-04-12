@@ -9,9 +9,8 @@ defineReplace(qtPlatformTargetSuffix) {
 }
 
 defineReplace(qtLibraryTarget) {
-   unset(LIBRARY_NAME)
    LIBRARY_NAME = $$1
-   mac:!static:contains(QT_CONFIG, qt_framework) {
+   mac:CONFIG(shared, static|shared):contains(QT_CONFIG, qt_framework) {
       QMAKE_FRAMEWORK_BUNDLE_NAME = $$LIBRARY_NAME
       export(QMAKE_FRAMEWORK_BUNDLE_NAME)
    } else {
@@ -20,10 +19,7 @@ defineReplace(qtLibraryTarget) {
        MAJOR_VERSION = $$section(VERSION, ., 0, 0)
        LIBRARY_NAME ~= s,^Qt,Qt$$MAJOR_VERSION,
    }
-   unset(LIBRARY_SUFFIX)
-   contains(TEMPLATE, .*lib):LIBRARY_SUFFIX = $$qtPlatformTargetSuffix()
-   isEmpty(LIBRARY_SUFFIX):return($$LIBRARY_NAME)
-   else:return($$member(LIBRARY_NAME, 0)$$LIBRARY_SUFFIX)
+   return($$LIBRARY_NAME$$qtPlatformTargetSuffix())
 }
 
 defineTest(qtAddLibrary) {
@@ -49,6 +45,13 @@ defineTest(qtProcessModuleFlags) {
             $$1 += $$flag
     }
     export($$1)
+}
+
+# qt module
+defineTest(qtHaveModule) {
+    !isEmpty(QT.$${1}.name): \
+        return(true)
+    return(false)
 }
 
 # qt module, UsePrivate flag, libs variable
@@ -102,27 +105,13 @@ defineTest(qtAddModule) {
 
     isEmpty(LINKAGE) {
        !isEmpty(MODULE_LIBS_ADD): LINKAGE = -L$$MODULE_LIBS_ADD
-       lib =
-       if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
-           win32: lib = $${MODULE_NAME}$${QT_LIBINFIX}d
-           mac: lib = $${MODULE_NAME}$${QT_LIBINFIX}_debug
-       }
-       isEmpty(lib): lib = $${MODULE_NAME}$${QT_LIBINFIX}
+       lib = $${MODULE_NAME}$${QT_LIBINFIX}$$qtPlatformTargetSuffix()
        LINKAGE += -l$$lib
 
        contains(QT_CONFIG, rpath): QMAKE_RPATHDIR *= $$eval(QT.$${1}.rpath)
 
        contains(MODULE_CONFIG, staticlib): \
            PRE_TARGETDEPS *= $$MODULE_LIBS/$${QMAKE_PREFIX_STATICLIB}$${lib}.$${QMAKE_EXTENSION_STATICLIB}
-
-       # Make sure we can link to uninstalled libraries
-       !isEmpty(MODULE_LIBS) {
-            for(rpl, QT.$${1}.rpath_link): \
-                QMAKE_RPATHLINKDIR *= $$rpl
-            !auto_use_privates:!isEqual(2, UsePrivate): \
-                for(rpl, QT.$${1}.rpath_link_private): \
-                    QMAKE_RPATHLINKDIR *= $$rpl
-       }
     }
     # Only link to this module if a libs directory is set, else this is just a module
     # to give access to sources or include files, and not for linking.
@@ -183,11 +172,28 @@ defineTest(qtAddModules) {
     export(using_privates)
 }
 
+defineTest(qtAddRpathLink) {
+    # -rpath-link is used by the linker to find dependencies of dynamic
+    # libraries which were NOT specified on the command line.
+    # This means that paths of direct dependencies (QT & QT_PRIVATE)
+    # don't need to appear here. However, their private dependencies'
+    # paths OTOH need to be put there.
+    pubqt = $$replace(1, -private$, )
+    pubdep = $$resolve_depends(pubqt, "QT.")
+    privdep = $$resolve_depends(pubqt, "QT.", ".depends" ".private_depends" ".run_depends")
+    privdep -= $$pubdep
+    rpaths =
+    for(dep, privdep): \
+        rpaths += $$eval(QT.$${dep}.libs)
+    QMAKE_RPATHLINKDIR *= $$unique(rpaths)
+    export(QMAKE_RPATHLINKDIR)
+}
+
 # variable, default
 defineTest(qtPrepareTool) {
     $$1 = $$eval(QT_TOOL.$${2}.command)
     isEmpty($$1) {
-        $$1 = $$[QT_HOST_BINS/get]/$$2
+        $$1 = $$[QT_HOST_BINS]/$$2
         contains(QMAKE_HOST.os, Windows):!contains($$1, .*\\.(exe|bat)$) {
             exists($$eval($$1).bat) {
                 $$1 = $$eval($$1).bat
@@ -230,13 +236,10 @@ defineTest(qtAddToolEnv) {
 
 defineTest(qtAddTargetEnv) {
     deps = $$replace(QT, -private$, )
-    deps = $$resolve_depends(deps, "QT.")
+    deps = $$resolve_depends(deps, "QT.", ".depends" ".private_depends" ".run_depends")
     !isEmpty(deps) {
-        for(dep, deps) {
+        for(dep, deps): \
             deppath += $$shell_path($$eval(QT.$${dep}.libs))
-            for(rpath, QT.$${dep}.rpath_link): \
-                deppath += $$shell_path($$rpath)
-        }
         equals(QMAKE_HOST.os, Windows) {
             deppath.name = PATH
         } else:contains(QMAKE_HOST.os, Linux|FreeBSD) {

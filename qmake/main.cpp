@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the qmake application of the Qt Toolkit.
@@ -97,15 +97,8 @@ int runQMake(int argc, char **argv)
     }
 
     QString oldpwd = qmake_getpwd();
-#ifdef Q_OS_WIN
-    if(!(oldpwd.length() == 3 && oldpwd[0].isLetter() && oldpwd.endsWith(":/")))
-#endif
-    {
-        if(!oldpwd.endsWith(QLatin1Char('/')))
-            oldpwd += QLatin1Char('/');
-    }
-    Option::output_dir = oldpwd; //for now this is the output dir
 
+    Option::output_dir = oldpwd; //for now this is the output dir
     if(Option::output.fileName() != "-") {
         QFileInfo fi(Option::output);
         QString dir;
@@ -119,7 +112,7 @@ int runQMake(int argc, char **argv)
         if(!dir.isNull() && dir != ".")
             Option::output_dir = dir;
         if(QDir::isRelativePath(Option::output_dir))
-            Option::output_dir.prepend(oldpwd);
+            Option::output_dir.prepend(oldpwd + QLatin1Char('/'));
         Option::output_dir = QDir::cleanPath(Option::output_dir);
     }
 
@@ -187,7 +180,7 @@ int runQMake(int argc, char **argv)
         if (!success)
             exit_val = 3;
 
-        if(mkfile && !mkfile->write(oldpwd)) {
+        if (mkfile && !mkfile->write()) {
             if(Option::qmake_mode == Option::QMAKE_GENERATE_PROJECT)
                 fprintf(stderr, "Unable to generate project file.\n");
             else

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -832,10 +832,19 @@ static void fuzzyCompareImages(const QImage &testImage, const QImage &referenceI
 class UnclippedWidget : public QWidget
 {
 public:
+    bool painted;
+
+    UnclippedWidget()
+        : painted(false)
+    {
+    }
+
     void paintEvent(QPaintEvent *)
     {
         QPainter p(this);
         p.fillRect(rect().adjusted(-1000, -1000, 1000, 1000), Qt::black);
+
+        painted = true;
     }
 };
 
@@ -865,7 +874,9 @@ void tst_QGL::graphicsViewClipping()
 
     scene.setSceneRect(view.viewport()->rect());
 
-    QVERIFY(QTest::qWaitForWindowActive(&view));
+    QTest::qWaitForWindowExposed(&view);
+
+    QTRY_VERIFY(widget->painted);
 
     QImage image = viewport->grabFrameBuffer();
     QImage expected = image;
@@ -1597,8 +1608,8 @@ void tst_QGL::fboFormat()
 
 void tst_QGL::testDontCrashOnDanglingResources()
 {
-    // We have a number of Q_GLOBAL_STATICS inside the QtOpenGL
-    // library. This test is verify that we don't crash as a result of
+    // We have a number of Q_GLOBAL_STATICS inside the Qt OpenGL
+    // module. This test is verify that we don't crash as a result of
     // them calling into libgl on application shutdown.
     QWidget *widget = new UnclippedWidget();
     widget->show();

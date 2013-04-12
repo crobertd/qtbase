@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -79,7 +79,9 @@ struct QWindowsScreenData
 class QWindowsScreen : public QPlatformScreen
 {
 public:
+#ifndef QT_NO_CURSOR
     typedef QSharedPointer<QWindowsCursor> WindowsCursorPtr;
+#endif
 
     explicit QWindowsScreen(const QWindowsScreenData &data);
 
@@ -106,14 +108,20 @@ public:
 
     inline void handleChanges(const QWindowsScreenData &newData);
 
+#ifndef QT_NO_CURSOR
     QPlatformCursor *cursor() const               { return m_cursor.data(); }
     const WindowsCursorPtr &windowsCursor() const { return m_cursor; }
+#else
+    QPlatformCursor *cursor() const               { return 0; }
+#endif // !QT_NO_CURSOR
 
     const QWindowsScreenData &data() const  { return m_data; }
 
 private:
     QWindowsScreenData m_data;
+#ifndef QT_NO_CURSOR
     const WindowsCursorPtr m_cursor;
+#endif
 };
 
 class QWindowsScreenManager

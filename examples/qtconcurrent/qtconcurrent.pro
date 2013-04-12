@@ -1,3 +1,5 @@
+requires(qtHaveModule(concurrent))
+
 TEMPLATE      = subdirs
 SUBDIRS       = imagescaling \
                 map \
@@ -8,7 +10,7 @@ SUBDIRS       = imagescaling \
     SUBDIRS += progressdialog
 }
 
-contains(QT_CONFIG, no-widgets) {
+!qtHaveModule(widgets) {
     SUBDIRS -= \
         imagescaling \
         progressdialog \

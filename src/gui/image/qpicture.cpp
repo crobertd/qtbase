@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -1278,6 +1278,7 @@ QList<QByteArray> QPicture::outputFormats()
 
     \ingroup painting
     \ingroup io
+    \inmodule QtGui
 
     QPictureIO contains a QIODevice object that is used for picture data
     I/O. The programmer can install new picture file formats in addition

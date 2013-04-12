@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -774,7 +774,6 @@ void tst_QPropertyAnimation::interpolated()
     }
 }
 
-Q_DECLARE_METATYPE(QVariant)
 
 void tst_QPropertyAnimation::setStartEndValues_data()
 {
@@ -1125,7 +1124,6 @@ void tst_QPropertyAnimation::restart()
 
 void tst_QPropertyAnimation::valueChanged()
 {
-    qRegisterMetaType<QVariant>("QVariant");
 
     //we check that we receive the valueChanged signal
     MyErrorObject o;

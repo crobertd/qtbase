@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -61,6 +61,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QFactoryLoader, loader,
 /*!
     \class QGenericPluginFactory
     \ingroup plugins
+    \inmodule QtGui
 
     \brief The QGenericPluginFactory class creates plugin drivers.
 

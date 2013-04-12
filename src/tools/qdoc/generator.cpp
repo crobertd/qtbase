@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -476,13 +476,7 @@ QString Generator::fullDocumentLocation(const Node *node, bool subdir)
     switch (node->type()) {
     case Node::Class:
     case Node::Namespace:
-        if (parentNode && !parentNode->name().isEmpty()) {
-            parentName.remove(QLatin1Char('.') + currentGenerator()->fileExtension());
-            parentName +=  QLatin1Char('-')
-                    + fileBase(node).toLower() + QLatin1Char('.') + currentGenerator()->fileExtension();
-        } else {
-            parentName = fileBase(node) + QLatin1Char('.') + currentGenerator()->fileExtension();
-        }
+        parentName = fileBase(node) + QLatin1Char('.') + currentGenerator()->fileExtension();
         break;
     case Node::Function:
     {

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -106,7 +106,7 @@ QmlDocVisitor::~QmlDocVisitor()
 }
 
 /*!
-  Returns the location of thre nearest comment above the \a offset.
+  Returns the location of the nearest comment above the \a offset.
  */
 QQmlJS::AST::SourceLocation QmlDocVisitor::precedingComment(quint32 offset) const
 {
@@ -322,11 +322,10 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
             else if (command == COMMAND_QMLINHERITS) {
                 if (node->name() == args[0].first)
                     doc.location().warning(tr("%1 tries to inherit itself").arg(args[0].first));
-                else {
-                    CodeParser::setLink(node, Node::InheritsLink, args[0].first);
-                    if (node->subType() == Node::QmlClass) {
-                        QmlClassNode::addInheritedBy(args[0].first,node);
-                    }
+                else if (node->subType() == Node::QmlClass) {
+                    QmlClassNode *qmlClass = static_cast<QmlClassNode*>(node);
+                    qmlClass->setQmlBaseName(args[0].first);
+                    QmlClassNode::addInheritedBy(args[0].first,node);
                 }
             }
             else if (command == COMMAND_QMLDEFAULT) {
@@ -344,7 +343,7 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
             else if ((command == COMMAND_INGROUP) && !args.isEmpty()) {
                 ArgList::ConstIterator argsIter = args.constBegin();
                 while (argsIter != args.constEnd()) {
-                    DocNode* dn = QDocDatabase::qdocDB()->addToGroup(argsIter->first, node);
+                    QDocDatabase::qdocDB()->addToGroup(argsIter->first, node);
                     ++argsIter;
                 }
             }
@@ -375,6 +374,24 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
 }
 
 /*!
+  Reconstruct the qualified \a id using dot notation
+  and return the fully qualified string.
+ */
+QString QmlDocVisitor::getFullyQualifiedId(QQmlJS::AST::UiQualifiedId *id)
+{
+    QString result;
+    if (id) {
+        result = id->name.toString();
+        id = id->next;
+        while (id != 0) {
+            result += QChar('.') + id->name.toString();
+            id = id->next;
+        }
+    }
+    return result;
+}
+
+/*!
   Begin the visit of the object \a definition, recording it in the
   qdoc database. Increment the object nesting level, which is used
   to test whether we are at the public API level. The public level
@@ -382,18 +399,16 @@ void QmlDocVisitor::applyMetacommands(QQmlJS::AST::SourceLocation,
 */
 bool QmlDocVisitor::visit(QQmlJS::AST::UiObjectDefinition *definition)
 {
-    QString type = definition->qualifiedTypeNameId->name.toString();
+    QString type = getFullyQualifiedId(definition->qualifiedTypeNameId);
     nestingLevel++;
 
     if (current->type() == Node::Namespace) {
         QmlClassNode *component = new QmlClassNode(current, name);
         component->setTitle(name);
         component->setImportList(importList);
-
         if (applyDocumentation(definition->firstSourceLocation(), component)) {
             QmlClassNode::addInheritedBy(type, component);
-            if (!component->links().contains(Node::InheritsLink))
-                component->setLink(Node::InheritsLink, type, type);
+            component->setQmlBaseName(type);
         }
         current = component;
     }
@@ -423,17 +438,18 @@ void QmlDocVisitor::endVisit(QQmlJS::AST::UiObjectDefinition *definition)
  */
 bool QmlDocVisitor::visit(QQmlJS::AST::UiImportList *imports)
 {
-    QQmlJS::AST::UiImport* imp = imports->import;
-    quint32 length =  imp->versionToken.offset - imp->fileNameToken.offset - 1;
-    QString module = document.mid(imp->fileNameToken.offset,length);
-    QString version = document.mid(imp->versionToken.offset, imp->versionToken.length);
-    if (version.size() > 1) {
-        int dot = version.lastIndexOf(QChar('.'));
-        if (dot > 0)
-            version = version.left(dot);
-    }
-    importList.append(QPair<QString, QString>(module, version));
+    while (imports != 0) {
+        QQmlJS::AST::UiImport* imp = imports->import;
 
+        QString name = document.mid(imp->fileNameToken.offset, imp->fileNameToken.length);
+        if (name[0] == '\"')
+            name = name.mid(1, name.length()-2);
+        QString version = document.mid(imp->versionToken.offset, imp->versionToken.length);
+        QString importId = document.mid(imp->importIdToken.offset, imp->importIdToken.length);
+        QString importUri = getFullyQualifiedId(imp->importUri);
+        importList.append(ImportRec(name, version, importId, importUri));
+        imports = imports->next;
+    }
     return true;
 }
 

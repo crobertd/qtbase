@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -138,6 +138,8 @@ NSImage *qt_mac_cgimage_to_nsimage(CGImageRef image)
 
 NSImage *qt_mac_create_nsimage(const QPixmap &pm)
 {
+    if (pm.isNull())
+        return 0;
     QImage image = pm.toImage();
     CGImageRef cgImage = qt_mac_image_to_cgimage(image);
     NSImage *nsImage = qt_mac_cgimage_to_nsimage(cgImage);
@@ -464,10 +466,9 @@ QString qt_mac_removeMnemonics(const QString &original)
     return returnText;
 }
 
-
-CGColorSpaceRef m_genericColorSpace = 0;
-QHash<CGDirectDisplayID, CGColorSpaceRef> m_displayColorSpaceHash;
-bool m_postRoutineRegistered = false;
+static CGColorSpaceRef m_genericColorSpace = 0;
+static QHash<CGDirectDisplayID, CGColorSpaceRef> m_displayColorSpaceHash;
+static bool m_postRoutineRegistered = false;
 
 CGColorSpaceRef qt_mac_genericColorSpace()
 {
@@ -621,20 +622,17 @@ CGFloat qt_mac_get_scalefactor()
 
 Qt::MouseButton cocoaButton2QtButton(NSInteger buttonNum)
 {
-    switch (buttonNum) {
-    case 0:
+    if (buttonNum == 0)
         return Qt::LeftButton;
-    case 1:
+    if (buttonNum == 1)
         return Qt::RightButton;
-    case 2:
-        return Qt::MidButton;
-    case 3:
-        return Qt::XButton1;
-    case 4:
-        return Qt::XButton2;
-    default:
-        return Qt::NoButton;
+    if (buttonNum == 2)
+        return Qt::MiddleButton;
+    if (buttonNum >= 3 && buttonNum <= 31) { // handle XButton1 and higher via logical shift
+        return Qt::MouseButton(uint(Qt::MiddleButton) << (buttonNum - 3));
     }
+    // else error: buttonNum too high, or negative
+    return Qt::NoButton;
 }
 
 bool qt_mac_execute_apple_script(const char *script, long script_len, AEDesc *ret) {
@@ -720,35 +718,38 @@ QString qt_mac_removeAmpersandEscapes(QString s)
  \warning This function is only available on Mac OS X.
  \warning This function is duplicated in qmacstyle_mac.mm
  */
-CGContextRef qt_mac_cg_context(const QPaintDevice *pdev)
+CGContextRef qt_mac_cg_context(QPaintDevice *pdev)
 {
-    if (pdev->devType() == QInternal::Pixmap) {
-        const QPixmap *pm = static_cast<const QPixmap*>(pdev);
-        CGColorSpaceRef colorspace = qt_mac_colorSpaceForDeviceType(pdev);
-        uint flags = kCGImageAlphaPremultipliedFirst;
-        flags |= kCGBitmapByteOrder32Host;
-        CGContextRef ret = 0;
+    // In Qt 5, QWidget and QPixmap (and QImage) paint devices are all QImages under the hood.
+    QImage *image = 0;
+    if (pdev->devType() == QInternal::Image) {
+        image = static_cast<QImage *>(pdev);
+    } else if (pdev->devType() == QInternal::Pixmap) {
 
+        const QPixmap *pm = static_cast<const QPixmap*>(pdev);
         QPlatformPixmap *data = const_cast<QPixmap *>(pm)->data_ptr().data();
         if (data && data->classId() == QPlatformPixmap::RasterClass) {
-            QImage *image = data->buffer();
-            ret = CGBitmapContextCreate(image->bits(), image->width(), image->height(),
-                                        8, image->bytesPerLine(), colorspace, flags);
+            image = data->buffer();
         } else {
             qDebug() << "qt_mac_cg_context: Unsupported pixmap class";
         }
-
-        CGContextTranslateCTM(ret, 0, pm->height());
-        CGContextScaleCTM(ret, 1, -1);
-        return ret;
     } else if (pdev->devType() == QInternal::Widget) {
-        //CGContextRef ret = static_cast<CGContextRef>(static_cast<const QWidget *>(pdev)->macCGHandle());
-        ///CGContextRetain(ret);
-        //return ret;
+        // TODO test: image = static_cast<QImage *>(static_cast<const QWidget *>(pdev)->backingStore()->paintDevice());
         qDebug() << "qt_mac_cg_context: not implemented: Widget class";
-        return 0;
     }
-    return 0;
+
+    if (!image)
+        return 0; // Context type not supported.
+
+    CGColorSpaceRef colorspace = qt_mac_colorSpaceForDeviceType(pdev);
+    uint flags = kCGImageAlphaPremultipliedFirst;
+    flags |= kCGBitmapByteOrder32Host;
+    CGContextRef ret = 0;
+    ret = CGBitmapContextCreate(image->bits(), image->width(), image->height(),
+                                8, image->bytesPerLine(), colorspace, flags);
+    CGContextTranslateCTM(ret, 0, image->height());
+    CGContextScaleCTM(ret, 1, -1);
+    return ret;
 }
 
 CGImageRef qt_mac_toCGImage(const QImage &qImage, bool isMask, uchar **dataCopy)
@@ -841,5 +842,19 @@ CGImageRef qt_mac_toCGImage(const QImage &qImage, bool isMask, uchar **dataCopy)
     CGDataProviderRelease(cgDataProviderRef);
     return cgImage;
 }
+
+QImage qt_mac_toQImage(CGImageRef image)
+{
+    const size_t w = CGImageGetWidth(image),
+                 h = CGImageGetHeight(image);
+    QImage ret(w, h, QImage::Format_ARGB32_Premultiplied);
+    ret.fill(Qt::transparent);
+    CGRect rect = CGRectMake(0, 0, w, h);
+    CGContextRef ctx = qt_mac_cg_context(&ret);
+    qt_mac_drawCGImage(ctx, &rect, image);
+    CGContextRelease(ctx);
+    return ret;
+}
+
 
 QT_END_NAMESPACE

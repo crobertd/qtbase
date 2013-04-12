@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -29,7 +29,7 @@
     \page qdoc-index.html
     \nextpage Introduction to QDoc
 
-    \title Table of Contents
+    \title QDoc Manual
 
     \list
       \li \l {Introduction to QDoc}
@@ -65,6 +65,7 @@
           \li \l {C++ Specific Configuration Variables}
           \li \l {HTML Specific Configuration Variables}
           \li \l {Supporting Derived Projects}
+          \li \l {Example Manifest Files}
           \li \l {qt.qdocconf}
           \li \l {minimum.qdocconf}
           \li \l {Generating DITA XML Output}
@@ -75,8 +76,8 @@
 
 /*!
     \page 01-qdoc-manual.html
-    \contentspage Table of Contents
-    \previouspage Table of Contents
+    \contentspage QDoc Manual
+    \previouspage QDoc Manual
     \nextpage Command Index
 
     \title Introduction to QDoc
@@ -128,7 +129,7 @@
     \endcode
 
     From the qdoc comment above, QDoc generates the now famous HTML
-    page \l {http://doc.qt.nokia.com/qobject.html#details}
+    page \l {http://qt-project.org/doc/qt-5.0/qtcore/qobject.html#details}
     {QObject Class Reference}.
 
     This manual explains how to use the QDoc commands in qdoc comments
@@ -229,7 +230,7 @@
 
 /*!
     \page 03-qdoc-commands-markup.html
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \previouspage Naming Things
     \nextpage Text Markup
 
@@ -243,7 +244,6 @@
     \li \l {11-qdoc-commands-specialcontent.html#abstract-command} {\\abstract}
     \li \l {12-0-qdoc-commands-miscellaneous.html#annotatedlist-command} {\\annotatedlist}
     \li \l {04-qdoc-commands-textmarkup.html#b-command} {\\b} \span {class="newStuff"} {(new 5/3/2012)}
-    \li \l {06-qdoc-commands-includecodeinline.html#badcode-command} {\\badcode}
     \li \l {04-qdoc-commands-textmarkup.html#b-command} {\\bold} {(deprecated, use \\b)}
     \li \l {11-qdoc-commands-specialcontent.html#brief-command} {\\brief}
     \li \l {04-qdoc-commands-textmarkup.html#c-command} {\\c}
@@ -310,7 +310,7 @@
 
 /*!
     \page 04-qdoc-commands-textmarkup.html
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \previouspage Markup Commands
     \nextpage Document Structure
 
@@ -924,7 +924,7 @@
 /*!
     \page 05-qdoc-commands-documentstructure.html
     \previouspage Text Markup
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Including Code Inline
 
     \title Document Structure
@@ -1146,7 +1146,7 @@
 /*!
     \page 06-qdoc-commands-includecodeinline.html
     \previouspage Document Structure
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Including External Code
 
     \title Including Code Inline
@@ -1175,8 +1175,7 @@
     snippets. It renders the code verbatim in a separate paragraph in
     the code font.
 
-    When processing any of the \\code, \l {badcode-command}
-    {\\badcode}, \l {newcode-command} {\\newcode} or \l
+    When processing any of the \\code, \l {newcode-command} {\\newcode} or \l
     {oldcode-command} {\\oldcode} commands, QDoc removes all
     indentation that is common for the verbatim code blocks within a
     \c{/}\c{*!} ...  \c{*}\c{/} comment before it adds the standard
@@ -1225,66 +1224,8 @@
 
     See also \l {c-command} {\\c}, \l
     {07-0-qdoc-commands-includingexternalcode.html#quotefromfile-command}
-    {\\quotefromfile}, \l {badcode-command} {\\badcode}, \l
-    {newcode-command} {\\newcode} and \l {oldcode-command}
+    {\\quotefromfile}, \l{newcode-command} {\\newcode} and \l {oldcode-command}
     {\\oldcode}.
-
-    \target badcode-command
-    \section1 \\badcode
-
-    The \\badcode and \\endcode commands delimit a snippet of code
-    that doesn't compile or is wrong for some other reason.
-
-    The \\badcode command is similar to the \l {code-command} {\\code}
-    command, but it renders the code snippet using a grey font instead
-    of black.
-
-    Like the \l {code-command} {\\code} command, this command begins
-    its code snippet on a new line rendered in the code font and with
-    the standard indentation.
-
-           \code
-           / *!
-               The statement below is rendered using the
-               regular \\code command:
-
-               \code
-                   statusbar()->message(tr("Host %1 found").arg(hostName));
-               \ endcode
-
-               While the following  statement is rendered using
-               the \\badcode command:
-
-               \badcode
-                   statusbar()->message(tr("Host" + hostName + " found"));
-               \ endcode
-           * /
-           \endcode
-
-    QDoc renders this as:
-
-           \quotation
-               The statement below is rendered using the
-               regular \\code command:
-
-               \code
-                   statusbar()->message(tr("Host %1 found").arg(hostName));
-               \endcode
-
-               While the following  statement is rendered using
-               the \\badcode command:
-
-               \badcode
-                   statusbar()->message(tr("Host" + hostName + " found"));
-               \endcode
-           \endquotation
-
-    Other QDoc commands are disabled within \\badcode... \\endcode,
-    and the special character '\\' is accepted and rendered like the
-    rest of the code.
-
-    See also \l {code-command} {\\code}, \l {newcode-command}
-    {\\newcode} and \l {oldcode-command} {\\oldcode}.
 
     \target newcode-command
     \section1 \\newcode
@@ -1293,14 +1234,12 @@
     show how to port a snippet of code to a new version of an API.
 
     The \\newcode command, and its companion the \\oldcode command, is
-    a convenience combination of the \l {code-command} {\\code} and \l
-    {badcode-command} {\\badcode} commands: The combination provides a
-    text relating the two code snippets to each other. The command
-    requires a preceding \\oldcode statement.
+    a convenience combination of the \l {code-command} {\\code} commands:
+    The combination provides a text relating the two code snippets to each
+    other. The command requires a preceding \\oldcode statement.
 
-    Like the \l {code-command} {\\code} and \l {badcode-command}
-    {\\badcode} commands, the \\newcode command renders its code on a
-    new line in the documentation using a typewriter font and the
+    Like the \l{code-command}{\\code} command, the \\newcode command renders its
+    code on a new line in the documentation using a typewriter font and the
     standard indentation.
 
            \code
@@ -1339,7 +1278,7 @@
     \\newcode statement; otherwise QDoc fails to parse the command
     and emits a warning.
 
-    See also \l {newcode-command} {\\newcode} and \l {badcode-command} {\\badcode}.
+    See also \l {newcode-command} {\\newcode}.
 
     \target qml-command
     \section1 \\qml
@@ -1392,7 +1331,7 @@
 /*!
     \page 07-0-qdoc-commands-includingexternalcode.html
     \previouspage Including Code Inline
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Creating Links
 
     \title Including External Code
@@ -1744,10 +1683,10 @@
                \printuntil hello
 
                First we create a \l
-               {http://qt.nokia.com/doc/4.0/qapplication} {QApplication}
+               {http://qt-project.org/doc/qt-5.0/qtwidgets/qapplication.html} {QApplication}
                object using the \c argc and \c argv parameters, then we
                create a \l
-               {http://qt.nokia.com/doc/4.0/qpushbutton} {QPushButton}.
+               {http://qt-project.org/doc/qt-5.0/qtwidgets/qpushbutton.html} {QPushButton}.
            \endquotation
 
     (\l {Example File} {The complete example file...})
@@ -2030,7 +1969,7 @@
 /*!
     \page  07-1-example.html
     \previouspage Including External Code
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
 
     \title Example File
 
@@ -2040,7 +1979,7 @@
 /*!
     \page 08-qdoc-commands-creatinglinks.html
     \previouspage Including External Code
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Including Images
 
     \title Creating Links
@@ -2060,16 +1999,16 @@
 
     \code
        / *!
-          Read the \l {http://qt.nokia.com/doc/4.0/}
-          {Qt's Reference Documentation} carefully.
+          Read the \l {http://qt-project.org/doc/qt-5.0/}
+          {Qt 5.0 Documentation} carefully.
        * /
     \endcode
 
     QDoc renders this as:
 
     \quotation
-       Read the \l {http://qt.nokia.com/doc/4.0/}
-       {Qt's Reference Documentation} carefully.
+       Read the \l {http://qt-project.org/doc/qt-5.0/}
+       {Qt 5.0 Documentation} carefully.
     \endquotation
 
     If the link target is equivalent to the link text, the second
@@ -2142,7 +2081,7 @@
     \li \c {\l network.html} - The file name used in a \l
     {page-command} {\\page} command.
 
-    \li \c {\l http://qt.nokia.com/} - A URL.
+    \li \c {\l http://qt-project.org/} - A URL.
 
     \endlist
 
@@ -2243,7 +2182,7 @@
     The text up to the line break becomes the target name. Be sure to
     follow the target name with a line break. Curly brackets are not
     required around the target name, but they may be required when the
-    target name is used in a link cammand. See below.
+    target name is used in a link command. See below.
 
     \code
     / *!
@@ -2271,7 +2210,7 @@
     From other documents, the target name can be linked this way:
 
     \list
-      \li \c {\l http://doc.qt.nokia.com/4.0/qregexp.html#capturing-parentheses}
+      \li \c {\l http://qt-project.org/doc/qt-5.0/qtcore/qregexp.html#capturing-parentheses}
     \endlist
 
     See also \l {l-command} {\\l}, \l {sa-command} {\\sa} and \l
@@ -2339,7 +2278,7 @@
 /*!
     \page 09-qdoc-commands-includingimages.html
     \previouspage Creating Links
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Tables and Lists
 
     \title Including Images
@@ -2535,7 +2474,7 @@
 /*!
     \page 10-qdoc-commands-tablesandlists.html
     \previouspage Including Images
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Special Content
 
     \title Tables and Lists
@@ -2610,7 +2549,7 @@
 
                <tr valign="top" bgcolor="#d0d0d0">
                    <td>
-                   <a href="http://qt.nokia.com/doc/4.0/signalsandslots.html">
+                   <a href="http://qt-project.org/doc/qt-5.0/qtcore/signalsandslots.html">
                        Signals and Slots</a>
                    </td>
                    <td>Signals and slots are used for communication
@@ -2619,7 +2558,7 @@
 
                <tr valign="top" bgcolor="#c0c0c0">
                    <td>
-                   <a href=http://qt.nokia.com/doc/4.0/layout.html">
+                   <a href="http://qt-project.org/doc/qt-5.0/qtwidgets/layout.html">
                        Layout Management</a></td>
                    <td>The Qt layout system provides a simple
                        and powerful way of specifying the layout
@@ -2628,7 +2567,7 @@
 
                <tr valign="top" bgcolor="#d0d0d0">
                    <td>
-                   <a href=http://qt.nokia.com/doc/4.0/dnd.html">
+                   <a href="http://qt-project.org/doc/qt-5.0/qtgui/dnd.html">
                        Drag and Drop</a></td>
                    <td>Drag and drop provides a simple visual
                        mechanism which users can use to transfer
@@ -2729,7 +2668,7 @@
 
                <tr valign="top" bgcolor="#d0d0d0">
                    <td>
-                   <a href="http://qt.nokia.com/doc/4.0/signalsandslots.html">
+                   <a href="http://qt-project.org/doc/qt-5.0/qtcore/signalsandslots.html">
                        Signals and Slots</a>
                    </td>
                    <td>Signals and slots are used for communication
@@ -2791,7 +2730,7 @@
 
                <tr valign="top" bgcolor="#d0d0d0">
                    <td>
-                   <a href="http://qt.nokia.com/doc/4.0/signalsandslots.html">
+                   <a href="http://qt-project.org/doc/qt-5.0/qtcore/signalsandslots.html">
                        Signals and Slots</a>
                    </td>
                    <td>Signals and slots are used for communication
@@ -2800,7 +2739,7 @@
 
                <tr valign="top" bgcolor="#c0c0c0">
                    <td>
-                   <a href=http://qt.nokia.com/doc/4.0/layout.html">
+                   <a href="http://qt-project.org/doc/qt-5.0/qtwidgets/layout.html">
                        Layout Management</a></td>
                    <td>The Qt layout system provides a simple
                        and powerful way of specifying the layout
@@ -2809,7 +2748,7 @@
 
                <tr valign="top" bgcolor="#d0d0d0">
                    <td>
-                   <a href=http://qt.nokia.com/doc/4.0/dnd.html">
+                   <a href="http://qt-project.org/doc/qt-5.0/qtgui/dnd.html">
                        Drag and Drop</a></td>
                    <td>Drag and drop provides a simple visual
                        mechanism which users can use to transfer
@@ -3061,7 +3000,7 @@
 /*!
     \page 11-qdoc-commands-specialcontent.html
     \previouspage Tables and Lists
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Miscellaneous
 
     \title Special Content
@@ -3213,7 +3152,7 @@
            \quotation
                \raw HTML
                    <h3>geometry :
-                   <a href="http://qt.nokia.com/doc/4.0/qrect.html">QRect</a>
+                   <a href="http://qt-project.org/doc/qt-5.0/qtcore/qrect.html">QRect</a>
                    </h3>
                \endraw
 
@@ -3496,7 +3435,7 @@
 /*!
     \page 12-0-qdoc-commands-miscellaneous.html
     \previouspage Special Content
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Creating DITA Maps
 
     \title Miscellaneous
@@ -3704,11 +3643,11 @@
         \l{GNU Lesser General Public License (LGPL)} or the
         \l{Qt Commercial Edition}{Qt Commercial License Agreement}, but rather under
         specific licenses from the original authors. Some pieces of code were developed
-        by Nokia and others originated from third parties.
+        by Digia and others originated from third parties.
         This page lists the licenses used, names the authors, and links
         to the places where it is used.
 
-        Nokia gratefully acknowledges these and other contributions
+        Digia gratefully acknowledges these and other contributions
         to Qt. We recommend that programs that use Qt also acknowledge
         these contributions, and quote these license statements in an
         appendix to the documentation.
@@ -4061,10 +4000,10 @@
        <shortdesc>the QWidget class is the base class of all user interface objects.</shortdesc>
        <prolog>
            <author>Qt Development Frameworks</author>
-           <publisher>Nokia</publisher>
+           <publisher>Qt Project</publisher>
            <copyright>
-               <copyryear year="2011"/>
-               <copyrholder>Nokia</copyrholder>
+               <copyryear year="2013"/>
+               <copyrholder>Qt Project</copyrholder>
            </copyright>
            <permissions view="all"/>
            <metadata>
@@ -4247,7 +4186,7 @@
 /*!
     \page 12-1-signalandslots.html
     \previouspage Miscellaneous
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
 
     \title signalandslots.qdocinc
 
@@ -4257,7 +4196,7 @@
 /*!
     \page 12-2-objectmodel.html
     \previouspage Miscellaneous
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
 
     \title objectmodel.qdocinc
 
@@ -4267,7 +4206,7 @@
 /*!
     \page 12-3-layoutmanagement.html
     \previouspage Miscellaneous
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
 
     \title layoutmanagement.qdocinc
 
@@ -4277,7 +4216,7 @@
 /*!
     \page 13-qdoc-commands-topics.html
     \previouspage Command Index
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Context Commands
 
     \title Topic Commands
@@ -4642,11 +4581,11 @@
 
         Files:
         \list
-        \li \l{http://qt.nokia.com/doc/4.0/widgets-imageviewer-imageviewer-cpp.html}
+        \li \l{http://qt-project.org/doc/qt-5.0/qtwidgets/widgets-imageviewer-imageviewer-cpp.html}
            {widgets/imageviewer/imageviewer.cpp}
-        \li \l{http://qt.nokia.com/doc/4.0/widgets-imageviewer-imageviewer-h.html}
+        \li \l{http://qt-project.org/doc/qt-5.0/qtwidgets/widgets-imageviewer-imageviewer-h.html}
            {widgets/imageviewer/imageviewer.h}
-        \li \l{http://qt.nokia.com/doc/4.0/widgets-imageviewer-main-cpp.html}
+        \li \l{http://qt-project.org/doc/qt-5.0/qtwidgets/widgets-imageviewer-main-cpp.html}
            {widgets/imageviewer/main.cpp}
         \endlist
 
@@ -4663,7 +4602,7 @@
 
     \code
     / *!
-        \externalpage http://doc.qt.nokia.com/index.html
+        \externalpage http://qt-project.org/doc/
         \title Qt Documentation Site
     * /
     \endcode
@@ -4681,7 +4620,7 @@
     QDoc renders this as:
 
     \quotation
-        At the \l {http://doc.qt.nokia.com/index.html}{Qt Documentation Site}
+        At the \l {http://qt-project.org/doc/}{Qt Documentation Site}
         you can find the latest documentation for Qt, Qt Creator, the Qt SDK
         and much more.
     \endquotation
@@ -4692,7 +4631,7 @@
 
     \code
     / *!
-        At the \l {http://doc.qt.nokia.com/index.html}{Qt Documentation Site}
+        At the \l {http://qt-project.org/doc/}{Qt Documentation Site}
         you can find the latest documentation for Qt, Qt Creator, the Qt SDK
         and much more.
     * /
@@ -4792,7 +4731,7 @@
          <table width="100%">
              <tr valign="top" bgcolor="#e0e0e0">
              <td><b>
-             <a href="http://qt.nokia.com/doc/4.0/qabstractsocket.html">QAbstractSocket</a>
+             <a href="http://qt-project.org/doc/qt-5.0/qtnetwork/qabstractsocket.html">QAbstractSocket</a>
              </b></td>
              <td>
              The base functionality common to all socket types
@@ -4800,7 +4739,7 @@
 
              <tr valign="top" bgcolor="#e0e0e0">
              <td><b>
-             <a href="http://qt.nokia.com/doc/4.0/qbuffer.html">QBuffer</a>
+             <a href="http://qt-project.org/doc/qt-5.0/qtcore/qbuffer.html">QBuffer</a>
              </b></td>
              <td>
              QIODevice interface for a QByteArray
@@ -4808,7 +4747,7 @@
 
              <tr valign="top" bgcolor="#e0e0e0">
              <td><b>
-             <a href="http://qt.nokia.com/doc/4.0/qclipboard.html">QClipboard</a>
+             <a href="http://qt-project.org/doc/qt-5.0/qtgui/qclipboard.html">QClipboard</a>
              </b></td>
              <td>
              Access to the window system clipboard
@@ -4884,7 +4823,7 @@
                <h3>Functions</h3>
                <ul>
                <li>RandomAccessIterator
-               <a href="http://qt.nokia.com/doc/4.0/qlineedit.html#EchoMode-enum">qBinaryFind</a></b>
+               <a href="http://qt-project.org/doc/qt-5.0/qtcore/qtalgorithms.html#qBinaryFind">qBinaryFind</a></b>
                (RandomAccessIterator begin, RandomAccessIterator end,
                const T & value)</li>
                <li>...</li></ul>
@@ -5024,9 +4963,9 @@
     / *!
         \module QtNetwork
 
-        \title QtNetwork Module
+        \title Qt Network Module
 
-        \brief The QtNetwork module offers classes that allow
+        \brief The Qt Network module offers classes that allow
         you to write TCP/IP clients and servers.
 
         The network module provides classes to make network
@@ -5042,10 +4981,10 @@
 
            \quotation
                \raw HTML
-               <h1><center>QtNetwork Module</center></h1>
+               <h1><center>Qt Network Module</center></h1>
                \endraw
 
-               The QtNetwork module offers classes that allow you to
+               The Qt Network module offers classes that allow you to
                write TCP/IP clients and servers.\l {module
                details} {More...}
 
@@ -5054,7 +4993,7 @@
                <table width="100%">
                    <tr valign="top" bgcolor="#d0d0d0">
                    <td><b>
-                   <a href="http://qt.nokia.com/doc/4.0/qabstractsocket.html">QAbstractSocket</a>
+                   <a href="http://qt-project.org/doc/qt-5.0/qtnetwork/qabstractsocket.html">QAbstractSocket</a>
                    </b></td>
                    <td>
                    The base functionality common to all socket types
@@ -5062,7 +5001,7 @@
 
                    <tr valign="top" bgcolor="#d0d0d0">
                    <td><b>
-                   <a href="http://qt.nokia.com/doc/4.0/qftp.html">QFtp</a>
+                   <a href="http://doc.qt.digia.com/4.0/qftp.html">QFtp</a>
                    </b></td>
                    <td>
                    Implementation of the FTP protocol
@@ -5083,7 +5022,7 @@
                <h2>Detailed Description</h2>
 
                <p>
-               The QtNetwork module offers classes that allow you to
+               The Qt Network module offers classes that allow you to
                write TCP/IP clients and servers.
                </p>
 
@@ -5133,7 +5072,7 @@
                <pre>#include &lt;Qt&gt;</pre>
                <ul>
                <li>
-               <a href="http://qt.nokia.com/doc/4.0/qt-qt3.html">
+               <a href="http://doc.qt.digia.com/4.0/qt-qt3.html">
                    Qt 3 support members</a></li>
                </ul>
 
@@ -5141,7 +5080,7 @@
                <h3>Types</h3>
                <ul>
                <li>flags
-               <a href="http://qt.nokia.com/doc/4.0/qt.html#AlignmentFlag-enum">Alignment</a></b></li>
+               <a href="http://doc.qt.digia.com/4.0/qt.html#AlignmentFlag-enum">Alignment</a></b></li>
                <li>...</li></ul>
                <hr />
                \endraw
@@ -5332,7 +5271,7 @@
 
     The \\qmlattachedproperty command is for documenting a QML
     property that will be attached to some QML type. See
-    \l{http://doc.qt.nokia.com/4.7/qdeclarativeintroduction.html#attached-properties}
+    \l{http://qt-project.org/doc/qt-4.7/qdeclarativeintroduction.html#attached-properties}
     {Attached Properties}. The argument is the rest of the line. The
     argument text should be the property type, followed by the QML
     element name where the property is being declared, the \c{::}
@@ -5357,14 +5296,14 @@
     \endcode
 
     QDoc includes this attached property on the QML reference page for the
-    \l{http://doc.qt.nokia.com/4.7/qml-listview.html#isCurrentItem-prop}
+    \l{http://qt-project.org/doc/qt-4.7/qml-listview.html#isCurrentItem-prop}
     {ListView} element.
 
     \target qmlattachedsignal-command
     \section1 \\qmlattachedsignal
 
     The \\qmlattachedsignal command is for documenting an attachable
-    \l{http://doc.qt.nokia.com/4.7/qdeclarativeintroduction.html#signal-handlers}
+    \l{http://qt-project.org/doc/qt-4.7/qdeclarativeintroduction.html#signal-handlers}
     {signal handler}. The \\qmlattachedsignal command is used just like
     the \l{qmlsignal-command} {\\qmlsignal} command.
 
@@ -5383,7 +5322,7 @@
     \endcode
 
     QDoc includes this documentation on the QML reference page for the
-    \l{http://doc.qt.nokia.com/4.7/qml-gridview.html#onAdd-signal}
+    \l{http://qt-project.org/doc/qt-4.7/qml-gridview.html#onAdd-signal}
     {GridView} element.
 
     \target qmlbasictype-command
@@ -5394,10 +5333,10 @@
     QML basic types group using the \l{ingroup-command}{\\ingroup}
     command as shown below. This will cause QDoc to include the
     documentation for the type on the
-    \l{http://doc.qt.nokia.com/4.7/qdeclarativebasictypes.html}
+    \l{http://qt-project.org/doc/qt-4.7/qdeclarativebasictypes.html}
     {QML Basic Types} page. The \l{brief-command} {\\brief} command
     is also required, because it appears on the
-    \l{http://doc.qt.nokia.com/4.7/qdeclarativebasictypes.html}
+    \l{http://qt-project.org/doc/qt-4.7/qdeclarativebasictypes.html}
     {QML Basic Types} page as well.
 
     \code
@@ -5421,7 +5360,7 @@
     * /
     \endcode
 
-    QDoc outputs this as \l{http://doc.qt.nokia.com/4.7/qml-int.html}
+    QDoc outputs this as \l{http://qt-project.org/doc/qt-4.7/qml-int.html}
     {qml-int.html}.
 
     \target qmlclass-command
@@ -5464,7 +5403,7 @@
     \endcode
 
     This example generates the
-    \l {http://doc.qt.nokia.com/4.7/qml-transform.html} {QML Transform}
+    \l {http://qt-project.org/doc/qt-4.7/qml-transform.html} {QML Transform}
     page. The \\qmlclass comment should include the \l
     {since-command} {\\since} command, because all QML types are
     new. It should also include the \l{brief-command} {\\brief}
@@ -5496,7 +5435,7 @@
     \endcode
 
     QDoc includes this documentation on the element refence page for the
-    \l{http://doc.qt.nokia.com/4.7/qml-textinput.html#select-method}
+    \l{http://qt-project.org/doc/qt-4.7/qml-textinput.html#select-method}
     {TextInput} element.
 
     \target qmltype-command
@@ -5538,7 +5477,7 @@
     \endcode
 
     The example generates the \l
-    {http://doc.qt.nokia.com/4.7/qml-transform.html} {QML Transform}
+    {http://qt-project.org/doc/qt-4.7/qml-transform.html} {QML Transform}
     page. The \e{\\qmltype} comment includes \l{instantiates-command}
     {\\instantiates} to specify that a Transform is instantiated by
     the C++ class QGraphicsTransform. A \\qmltype comment should
@@ -5572,7 +5511,7 @@
     \endcode
 
     QDoc includes this documentation on the element refence page for the
-    \l{http://doc.qt.nokia.com/4.7/qml-textinput.html#select-method}
+    \l{http://qt-project.org/doc/qt-4.7/qml-textinput.html#select-method}
     {TextInput} element.
 
     \target qmlproperty-command
@@ -5594,7 +5533,7 @@
     \endcode
 
     QDoc includes this QML property on the QML reference page for the
-    \l {http://doc.qt.nokia.com/4.7/qml-translate.html} {Translate}
+    \l {http://qt-project.org/doc/qt-4.7/qml-translate.html} {Translate}
     element.
 
     \target qmlsignal-command
@@ -5616,7 +5555,7 @@
     \endcode
 
     QDoc includes this documentation on the QML reference page for the
-    \l{http://doc.qt.nokia.com/4.7/qml-mousearea.html#onEntered-signal}
+    \l{http://qt-project.org/doc/qt-4.7/qml-mousearea.html#onEntered-signal}
     {MouseArea} element.
 
     \target qmlmodule-command
@@ -5694,7 +5633,7 @@
     \endcode
 
     The example generates the \l
-    {http://doc.qt.nokia.com/4.7/qml-transform.html} {QML Transform}
+    {http://qt-project.org/doc/qt-4.7/qml-transform.html} {QML Transform}
     page. The \e{\\qmltype} comment includes \l{instantiates-command}
     {\\instantiates} to specify that a Transform is instantiated by
     the C++ class QGraphicsTransform. A \\qmltype comment should
@@ -5814,7 +5753,7 @@
     \quotation
         \raw HTML
         <h3>
-            <a href="http://qt.nokia.com/doc/4.0/qpalette.html">
+            <a href="http://qt-project.org/doc/qt-5.0/qtgui/qpalette.html">
                 QPalette
             </a>
             QStyleOption::palette
@@ -5887,7 +5826,7 @@
 /*!
     \page 14-qdoc-commands-contextcommands.html
     \previouspage Topic Commands
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Document Navigation
 
     \title Context Commands
@@ -5929,7 +5868,7 @@
 /*!
     \page 15-qdoc-commands-navigation.html
     \previouspage Context Commands
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Reporting Status
 
     \title Document Navigation
@@ -6125,7 +6064,7 @@
 /*!
     \page 16-qdoc-commands-status.html
     \previouspage Document Navigation
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Thread Support
 
     \title Reporting Status
@@ -6169,7 +6108,7 @@
         library.} It is provided to keep old source code
         working. We strongly advise against using it in new
         code. See the \l
-        {http://qt.nokia.com/doc/4.0/porting4.html} {Porting
+        {http://doc.qt.digia.com/4.0/porting4.html} {Porting
         Guide} for more information.
     \endquotation
 
@@ -6218,7 +6157,7 @@
     \section1 \\default
 
     The \\default command is for marking a QML property as the
-    \l {http://doc.qt.nokia.com/4.7/qdeclarativeintroduction.html#default-properties}
+    \l {http://qt-project.org/doc/qt-4.7/qdeclarativeintroduction.html#default-properties}
     {default property}. The word \span {class="newStuff"} {default} is shown in red in
     the documentation of the property.
 
@@ -6235,7 +6174,7 @@
     \endcode
 
     See how QDoc renders this property on the reference page for the
-    \l {http://doc.qt.nokia.com/4.7/qml-state.html#changes-prop} {State}
+    \l {http://qt-project.org/doc/qt-4.7/qml-state.html#changes-prop} {State}
     type.
 
     \target obsolete-command
@@ -6350,7 +6289,7 @@
     \quotation
         \raw HTML
         <h3>
-        <a href="http://qt.nokia.com/doc/4.0/qchar.html#Joining-enum">Joining</a>
+        <a href="http://qt-project.org/doc/qt-5.0/qtcore/qchar.html#Joining-enum">Joining</a>
         QChar::joining () const</h3>
         \endraw
 
@@ -6369,7 +6308,7 @@
         \list
         \li ...
         \li Joining
-           \l {http://qt.nokia.com/doc/4.0/qchar.html#Joining-enum}
+           \l {http://qt-project.org/doc/qt-5.0/qtcore/qchar.html#Joining-enum}
               {joining}()
            const   \c (preliminary)
        \li ...
@@ -6427,7 +6366,7 @@
 /*!
     \page 17-qdoc-commands-thread.html
     \previouspage Reporting Status
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Relating Things
 
     \title Thread Support
@@ -6610,7 +6549,7 @@
 /*!
     \page 18-qdoc-commands-relating.html
     \previouspage Thread Support
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Grouping Things
 
     \title Relating Things
@@ -6658,11 +6597,11 @@
     \endcode
 
     QDoc includes this line on the reference page for the
-    \l{http://doc.qt.nokia.com/4.7/qml-pauseanimation.html} {PauseAnimation}
+    \l{http://qt-project.org/doc/qt-4.7/qml-pauseanimation.html} {PauseAnimation}
     element:
 
     \quotation
-        Inherits \l{http://doc.qt.nokia.com/4.7/qml-animation.html} {Animation}
+        Inherits \l{http://qt-project.org/doc/qt-4.7/qml-animation.html} {Animation}
     \endquotation
 
     \target overload-command
@@ -6707,13 +6646,13 @@
 
     \quotation
         \raw HTML
-        <h3><a href="http://qt.nokia.com/doc/4.0/qaction.html">QAction</a>
+        <h3><a href="http://qt-project.org/doc/qt-5.0/qtwidgets/qaction.html">QAction</a>
         * QMenu::addAction ( const QIcon & <i>icon</i>,
         const QString & <i>text</i> )
         </h3>
         \endraw
 
-    This function overloads \l {http://qt.nokia.com/doc/4.0/qwidget.html#addAction} {addAction()}
+    This function overloads \l {http://qt-project.org/doc/qt-5.0/qtwidgets/qwidget.html#addAction} {addAction()}
 
         This convenience function creates a new action with an
         \e icon and some \e text. The function adds the newly
@@ -6721,7 +6660,7 @@
         returns it.
 
         See also
-        \l {http://qt.nokia.com/doc/4.0/qwidget.html#addAction}
+        \l {http://qt-project.org/doc/qt-5.0/qtwidgets/qwidget.html#addAction}
         {QWidget::addAction}().
     \endquotation
 
@@ -6795,7 +6734,7 @@
 /*!
     \page 19-qdoc-commands-grouping.html
     \previouspage Relating Things
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Naming Things
 
     \title Grouping Things
@@ -6832,7 +6771,7 @@
     list created by calling the \l {generatelist-command}
     {\\generatelist} command with the \c mainclasses argument:
 
-    \l http://qt.nokia.com/doc/4.0/mainclasses.html
+    \l http://doc.qt.digia.com/4.0/mainclasses.html
 
     \note The Qt documentation no longer includes the \e mainclasses
     page.
@@ -6897,7 +6836,7 @@
     \endcode
 
     This ensures that the QDesignerTaskMenuExtension class is included
-    in the \c QtDesigner module, which means, for example, that the
+    in the Qt Designer module, which means, for example, that the
     class will appear on the list created by calling the \l
     {generatelist-command} {\\generatelist} command with the \c
     {{classesbymodule QtDesigner}} argument.
@@ -6909,7 +6848,7 @@
 /*!
     \page 20-qdoc-commands-namingthings.html
     \previouspage Grouping Things
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Markup Commands
 
     \title Naming Things
@@ -6997,7 +6936,7 @@
 /*!
     \page 21-0-qdoc-creating-dita-maps.html
     \previouspage Miscellaneous
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage The QDoc Configuration File
 
     \title Creating DITA Maps
@@ -7026,7 +6965,7 @@
     is created actually contains XML text, but the \e{.ditamap} suffix is
     used to identify the file as containing a DITA MAP.
 
-    The argument is the name of the the file to be created. In the following
+    The argument is the name of the file to be created. In the following
     example, the file \e{creator.ditamap} is output:
     \code
       \ditamap creator.ditamap
@@ -7134,7 +7073,7 @@
 /*!
     \page 21-0-qdoc-configuration.html
     \previouspage Creating DITA Maps
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Generic Configuration Variables
 
     \title The QDoc Configuration File
@@ -7216,6 +7155,7 @@
     \li \l {22-qdoc-configuration-generalvariables.html#images.fileextensions-variable} {images.fileextensions}
     \li \l {22-qdoc-configuration-generalvariables.html#language-variable} {language}
     \li \l {22-qdoc-configuration-generalvariables.html#macro-variable} {macro}
+    \li \l {22-qdoc-configuration-generalvariables.html#manifestmeta-variable} {manifestmeta}
     \li \l {22-qdoc-configuration-generalvariables.html#outputdir-variable} {outputdir}
     \li \l {22-qdoc-configuration-generalvariables.html#outputformats-variable} {outputformats}
     \li \l {22-qdoc-configuration-generalvariables.html#sourcedirs-variable} {sourcedirs}
@@ -7246,7 +7186,7 @@
 /*!
     \page 21-1-minimum-qdocconf.html
     \previouspage qt.qdocconf
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Generating DITA XML Output
 
     \title minimum.qdocconf
@@ -7257,7 +7197,7 @@
 /*!
     \page 21-2-qt-qdocconf.html
     \previouspage Supporting Derived Projects
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage minimum.qdocconf
 
     \title qt.qdocconf
@@ -7268,8 +7208,8 @@
 /*!
     \page 21-3-qt-dita-xml-output.html
     \previouspage minimum.qdocconf
-    \contentspage Table of Contents
-    \nextpage Table of Contents
+    \contentspage QDoc Manual
+    \nextpage QDoc Manual
 
     \title Generating DITA XML Output
 
@@ -7313,9 +7253,9 @@
     \code
     dita.metadata.default.author      = Qt Development Frameworks
     dita.metadata.default.permissions = all
-    dita.metadata.default.publisher   = Nokia
-    dita.metadata.default.copyryear = 2011
-    dita.metadata.default.copyrholder = Nokia
+    dita.metadata.default.publisher   = Qt Project
+    dita.metadata.default.copyryear = 2013
+    dita.metadata.default.copyrholder = Qt Project
     dita.metadata.default.audience = programmer
     \endcode
 
@@ -7327,7 +7267,7 @@
 /*!
     \page 22-qdoc-configuration-generalvariables.html
     \previouspage The QDoc Configuration File
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Creating Help Project Files
 
     \title Generic Configuration Variables
@@ -7912,6 +7852,14 @@
 
     See also \l {alias-variable} {alias}.
 
+    \target manifestmeta-variable
+    \section1 manifestmeta
+
+    The \c manifestmeta variable specifies additional meta-content
+    for the example manifest files generated by QDoc.
+
+    See the \l{Manifest Meta Content} section for more information.
+
     \target naturallanguage-variable
     \section1 naturallanguage
 
@@ -8235,7 +8183,7 @@
 /*!
     \page 22-creating-help-project-files.html
     \previouspage Generic Configuration Variables
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage C++ Specific Configuration Variables
 
     \title Creating Help Project Files
@@ -8304,7 +8252,7 @@
 /*!
     \page 23-qdoc-configuration-cppvariables.html
     \previouspage Creating Help Project Files
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage HTML Specific Configuration Variables
 
     \title C++ Specific Configuration Variables
@@ -8418,7 +8366,7 @@
 /*!
     \page 24-qdoc-configuration-htmlvariables.html
     \previouspage C++ Specific Configuration Variables
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Supporting Derived Projects
 
     \title HTML Specific Configuration Variables
@@ -8450,7 +8398,7 @@
     \endcode
 
     The complete variable entry in \l qt.qdocconf provides the
-    standard footer of the \l {http://qt.nokia.com/doc/4.0/index.html}
+    standard footer of the \l {http://doc.qt.digia.com/4.0/index.html}
     {Qt Reference Documentation}.
 
     \target HTML.postheader-variable
@@ -8479,7 +8427,7 @@
     \endcode
 
     The complete variable entry in \l qt.qdocconf provides the
-    standard header of the \l {http://doc.qt.nokia.com/}
+    standard header of the \l {http://doc.qt.digia.com/}
     {Qt Reference Documentation}.
 
     \target HTML.style-variable
@@ -8506,7 +8454,7 @@
     \endcode
 
     provides the HTML style for the \l
-    {http://qt.nokia.com/doc/4.0/index.html} {Qt Reference
+    {http://doc.qt.digia.com/4.0/index.html} {Qt Reference
     Documentation}.
 
     \target HTML.stylesheets-variable
@@ -8533,7 +8481,8 @@
 /*!
     \page 25-qdoc-configuration-derivedprojects.html
     \previouspage HTML Specific Configuration Variables
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
+    \nextpage Example Manifest Files
 
     \title Supporting Derived Projects
 
@@ -8599,14 +8548,14 @@
     \code
     project     = Qt
     description = Qt Reference Documentation
-    url         = http://doc.qt.nokia.com/4.7
+    url         = http://qt-project.org/doc/qt-4.8/
 
          ...
     \endcode
 
     This makes sure that whenever \c qt.index is used to generate
     references to for example Qt classes, the base URL is \c
-    http://doc.qt.nokia.com/4.7.
+    http://doc.qt.digia.com/4.7.
 
     See also \l indexes.
 
@@ -8622,7 +8571,7 @@
     \code
         project     = Qt
         description = Qt Reference Documentation
-        url         = http://doc.qt.nokia.com/4.7
+        url         = http://qt-project.org/doc/qt-4.8/
 
         ...
     \endcode
@@ -8641,8 +8590,8 @@
 
     \code
         project                 = QtCreator
-        description             = Qt Creator Class Documentation
-        url                     = http://doc.qt.nokia.com/qtcreator-2.2
+        description             = Qt Creator Manual
+        url                     = http://qt-project.org/doc/qtcreator-2.6/
 
         indexes                 = $QTDIR/doc/html/qt.index
 
@@ -8672,9 +8621,91 @@
 */
 
 /*!
+    \page 26-qdoc-configuration-example-manifest-files.html
+    \previouspage Supporting Derived Projects
+    \contentspage QDoc Manual
+
+    \title Example Manifest Files
+
+    QDoc generates XML files that contain information about all documented
+    examples and demos. These files, named \c {examples-manifest.xml} and
+    \c {demos-manifest.xml}, are used by Qt Creator to present a list of
+    examples in its welcome screen and to link to their documentation.
+
+    \section1 Manifest XML Structure
+
+    A manifest file has the following structure:
+
+    \code
+    <?xml version="1.0" encoding="UTF-8"?>
+    <instructionals module="QtGui">
+        <examples>
+            <example
+                name="Analog Clock Window Example"
+                docUrl="qthelp://org.qt-project.qtgui.502/qtgui/analogclock.html"
+                projectPath="gui/analogclock/analogclock.pro"
+                imageUrl="qthelp://org.qt-project.qtgui.502/qtgui/images/analogclock-window-example.png">
+                <description><![CDATA[The Analog Clock Window example shows how
+                    to draw the contents of a custom window.]]></description>
+                <tags>analog,clock,window</tags>
+                <fileToOpen>gui/analogclock/main.cpp</fileToOpen>
+            </example>
+            ...
+        </examples>
+    </instructionals>
+    \endcode
+
+    Each \c {<example>} element contains information about a name,
+    description, the location of the project file and documentation,
+    as well as a list of tags associated with the example.
+
+    \target metacontent
+    \section1 Manifest Meta Content
+
+    It is possible to augment the manifest files with additional
+    meta-content - that is, extra attributes and tags for selected
+    examples, using the \c manifestmeta configuration command.
+
+    One use case for meta-content is highlighting a number of prominent
+    examples. Another is improving search functionality by adding
+    relevant keywords as tags for a certain category of examples.
+
+    The examples for which meta-content is applied to is specified using
+    one or more filters. Matching examples to filters is done based on
+    names, with each example name prefixed with a module name and a
+    slash. Simple wildcard matching is supported; by using \c {*} at the
+    end it's possible to match multiple examples with a single string.
+
+    Example:
+
+    \code
+    manifestmeta.filters                = highlighted sql webkit global
+
+    manifestmeta.highlighted.names      = "QtGui/Analog Clock Window Example" \
+                                          "QtWidgets/Analog Clock Example"
+    manifestmeta.highlighted.attributes = isHighlighted:true
+
+    manifestmeta.sql.names              = "QtSql/*"
+    manifestmeta.sql.tags               = database,sql
+
+    manifestmeta.webkit.names           = "QtWebKitExamples/*"
+    manifestmeta.webkit.tags            = webkit
+
+    manifestmeta.global.names           = *
+    manifestmeta.global.tags            = qt5
+    \endcode
+
+    Above, an \c isHighlighted attribute is added to two examples. If
+    the attribute value is omitted, QDoc uses the string \c {true} by
+    default. Extra tags are added for Qt WebKit and Qt SQL examples, and
+    another tag is applied to all examples by using just \c {*} as the
+    match string.
+*/
+
+/*!
     \page 27-qdoc-commands-alphabetical.html
     \previouspage Introduction to QDoc
-    \contentspage Table of Contents
+    \contentspage QDoc Manual
     \nextpage Topic Commands
 
     \title Command Index
@@ -8688,7 +8719,6 @@
     \li \l {12-0-qdoc-commands-miscellaneous.html#annotatedlist-command} {\\annotatedlist}
     \li \l {04-qdoc-commands-textmarkup.html#b-command} {\\b} \span {class="newStuff"} {(new 5/3/2012)}
     \li \l { 22-qdoc-configuration-generalvariables.html#basedir-variable} {basedir} \span {class="newStuff"} {(experimental)}
-    \li \l {06-qdoc-commands-includecodeinline.html#badcode-command} {\\badcode}
     \li \l {04-qdoc-commands-textmarkup.html#b-command} {\\bold} \span {class="newStuff"} {(deprecated, use \\b)}
     \li \l {11-qdoc-commands-specialcontent.html#brief-command} {\\brief}
     \li \l {04-qdoc-commands-textmarkup.html#c-command} {\\c}
@@ -8806,6 +8836,6 @@
 */
 
 /*!
-    \externalpage http://qt.nokia.com/about
+    \externalpage http://qt-project.org/about
     \title About Qt
 */

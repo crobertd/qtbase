@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -916,7 +916,7 @@ QWizardLayoutInfo QWizardPrivate::layoutInfoForCurrentPage()
         info.buttonSpacing = 12;
 
     info.wizStyle = wizStyle;
-    if ((info.wizStyle == QWizard::AeroStyle)
+    if (info.wizStyle == QWizard::AeroStyle
 #if !defined(QT_NO_STYLE_WINDOWSVISTA)
         && (QVistaHelper::vistaState() == QVistaHelper::Classic || vistaDisabled())
 #endif
@@ -3573,7 +3573,7 @@ bool QWizardPage::validatePage()
     from the rest of your implementation, whenever the value of isComplete()
     changes. This ensures that QWizard updates the enabled or disabled state of
     its buttons. An example of the reimplementation is
-    available \l{http://qt.nokia.com/doc/qq/qq22-qwizard.html#validatebeforeitstoolate}
+    available \l{http://doc.qt.digia.com/qq/qq22-qwizard.html#validatebeforeitstoolate}
     {here}.
 
     \sa completeChanged(), isFinalPage()

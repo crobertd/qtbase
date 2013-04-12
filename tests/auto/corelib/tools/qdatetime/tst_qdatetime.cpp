@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -147,9 +147,6 @@ private:
     QTime invalidTime() const { return QTime(-1, -1, -1); }
 };
 
-Q_DECLARE_METATYPE(QDateTime)
-Q_DECLARE_METATYPE(QDate)
-Q_DECLARE_METATYPE(QTime)
 Q_DECLARE_METATYPE(Qt::TimeSpec)
 Q_DECLARE_METATYPE(Qt::DateFormat)
 
@@ -1119,7 +1116,7 @@ void tst_QDateTime::currentDateTimeUtc2()
     qint64 msec;
 
     // check that we got all down to the same milliseconds
-    int i = 2;
+    int i = 20;
     bool ok = false;
     do {
         local = QDateTime::currentDateTime();
@@ -1440,16 +1437,10 @@ void tst_QDateTime::toString_strformat_data()
     QTest::newRow( "datetime13" ) << QDateTime(QDate(1974, 12, 1), QTime(14, 14, 20))
                                  << QString("hh''mm''ss dd''MM''yyyy")
                                  << QString("14'14'20 01'12'1974");
-    QTest::newRow( "missing p and P" ) << QDateTime(QDate(1999, 12, 31), QTime(3, 59, 59, 999))
-                                 << QString("hhhhhaA") << QString("03033aA");
-    QTest::newRow( "OK A, bad P" ) << QDateTime(QDate(1999, 12, 31), QTime(0, 59, 59, 999))
-        << QString("hhAX") << QString("00AX");
     QTest::newRow( "single, 0 => 12 AM" ) << QDateTime(QDate(1999, 12, 31), QTime(0, 59, 59, 999))
         << QString("hAP") << QString("12AM");
     QTest::newRow( "double, 0 => 12 AM" ) << QDateTime(QDate(1999, 12, 31), QTime(0, 59, 59, 999))
         << QString("hhAP") << QString("12AM");
-    QTest::newRow( "double, garbage" ) << QDateTime(QDate(1999, 12, 31), QTime(0, 59, 59, 999))
-        << QString("hhAX") << QString("00AX");
     QTest::newRow( "dddd" ) << QDateTime(QDate(1999, 12, 31), QTime(0, 59, 59, 999))
         << QString("dddd") << QString("Friday");
     QTest::newRow( "ddd" ) << QDateTime(QDate(1999, 12, 31), QTime(0, 59, 59, 999))

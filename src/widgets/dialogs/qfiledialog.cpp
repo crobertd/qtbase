@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -536,6 +536,7 @@ void QFileDialogPrivate::initHelper(QPlatformDialogHelper *h)
     QObject::connect(h, SIGNAL(filesSelected(QStringList)), d, SIGNAL(filesSelected(QStringList)));
     QObject::connect(h, SIGNAL(currentChanged(QString)), d, SIGNAL(currentChanged(QString)));
     QObject::connect(h, SIGNAL(directoryEntered(QString)), d, SIGNAL(directoryEntered(QString)));
+    QObject::connect(h, SIGNAL(directoryEntered(QString)), d, SLOT(_q_nativeEnterDirectory(QString)));
     QObject::connect(h, SIGNAL(filterSelected(QString)), d, SIGNAL(filterSelected(QString)));
     static_cast<QPlatformFileDialogHelper *>(h)->setOptions(options);
 }
@@ -2965,7 +2966,11 @@ void QFileDialogPrivate::_q_enterDirectory(const QModelIndex &index)
             lineEdit()->clear();
         }
     } else {
-        q->accept();
+        // Do not accept when shift-clicking to multi-select a file in environments with single-click-activation (KDE)
+        if (!q->style()->styleHint(QStyle::SH_ItemView_ActivateItemOnSingleClick)
+            || q->fileMode() != QFileDialog::ExistingFiles || !(QGuiApplication::keyboardModifiers() & Qt::CTRL)) {
+            q->accept();
+        }
     }
 }
 
@@ -3110,6 +3115,12 @@ void QFileDialogPrivate::_q_fileRenamed(const QString &path, const QString oldNa
         if (path == rootPath() && lineEdit()->text() == oldName)
             lineEdit()->setText(newName);
     }
+}
+
+void QFileDialogPrivate::_q_nativeEnterDirectory(const QString &directory)
+{
+    if (!directory.isEmpty()) // Windows native dialogs occasionally emit signals with empty strings.
+        *lastVisitedDir() = directory;
 }
 
 /*!

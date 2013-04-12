@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -66,6 +66,8 @@ struct QmlPropArgs
 
 class QmlDocVisitor : public QQmlJS::AST::Visitor
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::QmlDocVisitor)
+
 public:
     QmlDocVisitor(const QString &filePath,
                   const QString &code,
@@ -95,6 +97,7 @@ public:
     void endVisit(QQmlJS::AST::UiQualifiedId *);
 
 private:
+    QString getFullyQualifiedId(QQmlJS::AST::UiQualifiedId *id);
     QQmlJS::AST::SourceLocation precedingComment(quint32 offset) const;
     bool applyDocumentation(QQmlJS::AST::SourceLocation location, Node *node);
     void applyMetacommands(QQmlJS::AST::SourceLocation location, Node* node, Doc& doc);
@@ -108,7 +111,7 @@ private:
     QString filePath;
     QString name;
     QString document;
-    QList<QPair<QString, QString> > importList;
+    ImportList importList;
     QSet<QString> commands;
     QSet<QString> topics;
     QSet<quint32> usedComments;

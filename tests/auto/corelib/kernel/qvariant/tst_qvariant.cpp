@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -2029,7 +2029,7 @@ void tst_QVariant::saveLoadCustomTypes()
 
 void tst_QVariant::url()
 {
-    QString str("http://qt.nokia.com");
+    QString str("http://qt-project.org");
     QUrl url(str);
 
     QVariant v(url); //built with a QUrl

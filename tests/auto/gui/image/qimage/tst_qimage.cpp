@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -86,6 +86,7 @@ private slots:
 #endif
 
     void dotsPerMeterZero();
+    void dotsPerMeterAndDpi();
 
     void convertToFormatPreserveDotsPrMeter();
     void convertToFormatPreserveText();
@@ -773,7 +774,7 @@ void tst_QImage::convertToFormat()
     int dp = (src.depth() < 8 || result.depth() < 8) ? 8 : 1;
     QImage src2(src.bits() + (dp*src.depth())/8,
                 src.width() - dp*2,
-                src.height(), src.bytesPerLine(),
+                src.height() - 1, src.bytesPerLine(),
                 src.format());
     if (src.depth() < 8)
         src2.setColorTable(src.colorTable());
@@ -785,7 +786,7 @@ void tst_QImage::convertToFormat()
 
     QImage expected2(result.bits() + (dp*result.depth())/8,
                      result.width() - dp*2,
-                     result.height(), result.bytesPerLine(),
+                     result.height() - 1, result.bytesPerLine(),
                      result.format());
     if (result.depth() < 8)
         expected2.setColorTable(result.colorTable());
@@ -899,6 +900,27 @@ void tst_QImage::dotsPerMeterZero()
 
     QCOMPARE(img.dotsPerMeterX(), defaultDpmX);
     QCOMPARE(img.dotsPerMeterY(), defaultDpmY);
+
+}
+
+// verify that setting dotsPerMeter has an effect on the dpi.
+void tst_QImage::dotsPerMeterAndDpi()
+{
+    QImage img(100, 100, QImage::Format_RGB32);
+    QVERIFY(!img.isNull());
+
+    QPoint defaultLogicalDpi(img.logicalDpiX(), img.logicalDpiY());
+    QPoint defaultPhysicalDpi(img.physicalDpiX(), img.physicalDpiY());
+
+    img.setDotsPerMeterX(100);  // set x
+    QCOMPARE(img.logicalDpiY(), defaultLogicalDpi.y()); // no effect on y
+    QCOMPARE(img.physicalDpiY(), defaultPhysicalDpi.y());
+    QVERIFY(img.logicalDpiX() != defaultLogicalDpi.x()); // x changed
+    QVERIFY(img.physicalDpiX() != defaultPhysicalDpi.x());
+
+    img.setDotsPerMeterY(200);  // set y
+    QVERIFY(img.logicalDpiY() != defaultLogicalDpi.y()); // y changed
+    QVERIFY(img.physicalDpiY() != defaultPhysicalDpi.y());
 }
 
 void tst_QImage::rotate_data()
@@ -2093,5 +2115,5 @@ void tst_QImage::cleanupFunctions()
 
 }
 
-QTEST_MAIN(tst_QImage)
+QTEST_GUILESS_MAIN(tst_QImage)
 #include "tst_qimage.moc"

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -85,6 +85,8 @@ struct HelpProject
 
 class HelpProjectWriter
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::HelpProjectWriter)
+
 public:
     HelpProjectWriter(const Config &config,
                       const QString &defaultFileName,
@@ -103,6 +105,10 @@ private:
     void writeHashFile(QFile &file);
     void writeNode(HelpProject &project, QXmlStreamWriter &writer, const Node *node);
     void readSelectors(SubProject &subproject, const QStringList &selectors);
+    void addMembers(HelpProject &project, QXmlStreamWriter &writer,
+                           const Node *node, bool writeSections = true);
+    void writeSection(QXmlStreamWriter &writer, const QString &path,
+                            const QString &value);
 
     QDocDatabase* qdb_;
     Generator* gen_;

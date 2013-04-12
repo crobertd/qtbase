@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -1470,7 +1470,7 @@ void QStandardItem::insertRow(int row, const QList<QStandardItem*> &items)
 }
 
 /*!
-    Inserts \a items at \a row. The column count wont be changed.
+    Inserts \a items at \a row. The column count won't be changed.
 
     \sa insertRow(), insertColumn()
 */

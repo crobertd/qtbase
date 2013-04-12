@@ -41,16 +41,6 @@ load(qt_module)
 
 INCLUDEPATH += $$QT_BUILD_TREE/src/corelib/global
 
-DEPENDPATH += $$INCLUDEPATH \
-              ../../corelib/global \
-              ../../corelib/kernel \
-              ../../corelib/tools \
-              ../../corelib/io \
-              ../../corelib/codecs \
-              ../../corelib/json \
-              ../../xml/dom \
-              ../../xml/sax
-
 SOURCES += \
            ../../corelib/codecs/qlatincodec.cpp \
            ../../corelib/codecs/qtextcodec.cpp \
@@ -139,16 +129,6 @@ win32:LIBS += -luser32 -lole32 -ladvapi32
 lib.CONFIG = dummy_install
 INSTALLS += lib
 
-# Make dummy "sis" and "freeze" target to keep recursive "make sis/freeze" working.
-sis_target.target = sis
-sis_target.commands =
-sis_target.depends = first
-QMAKE_EXTRA_TARGETS += sis_target
-freeze_target.target = freeze
-freeze_target.commands =
-freeze_target.depends = first
-QMAKE_EXTRA_TARGETS += freeze_target
-
 !build_pass {
     # We need the forwarding headers before their respective modules are built,
     # so do a minimal syncqt run.
@@ -159,7 +139,7 @@ QMAKE_EXTRA_TARGETS += freeze_target
     else: \
         mod_component_base = $$dirname(_QMAKE_CACHE_)
     QMAKE_SYNCQT += -minimal -module QtCore -module QtDBus -module QtXml \
-        -mkspecsdir $$[QT_HOST_DATA/get]/mkspecs -outdir $$mod_component_base $$dirname(_QMAKE_CONF_)
+        -version $$VERSION -outdir $$mod_component_base $$dirname(_QMAKE_CONF_)
     contains(QT_CONFIG, zlib):QMAKE_SYNCQT += -module QtZlib
     !silent:message($$QMAKE_SYNCQT)
     system($$QMAKE_SYNCQT)|error("Failed to run: $$QMAKE_SYNCQT")

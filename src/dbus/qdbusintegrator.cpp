@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtDBus module of the Qt Toolkit.
@@ -115,7 +115,7 @@ static inline QDebug operator<<(QDebug dbg, const QDBusConnectionPrivate *conn)
 void qdbusDefaultThreadDebug(int action, int condition, QDBusConnectionPrivate *conn)
 {
     qDBusDebug() << QThread::currentThread()
-                 << "QtDBus threading action" << action
+                 << "Qt D-Bus threading action" << action
                  << (condition == QDBusLockerBase::BeforeLock ? "before lock" :
                      condition == QDBusLockerBase::AfterLock ? "after lock" :
                      condition == QDBusLockerBase::BeforeUnlock ? "before unlock" :

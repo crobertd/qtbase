@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -93,13 +93,9 @@
 #endif
 
 
-Q_DECLARE_METATYPE(QDate);
 Q_DECLARE_METATYPE(Qt::Key);
 Q_DECLARE_METATYPE(Qt::KeyboardModifiers);
 Q_DECLARE_METATYPE(Qt::KeyboardModifier);
-Q_DECLARE_METATYPE(QDateTime);
-Q_DECLARE_METATYPE(QTime);
-Q_DECLARE_METATYPE(QList<int>);
 
 #if defined(Q_OS_WINCE)
 #ifndef SPI_GETPLATFORMTYPE
@@ -291,9 +287,6 @@ private:
 typedef QList<QTime> TimeList;
 typedef QList<Qt::Key> KeyList;
 
-Q_DECLARE_METATYPE(TimeList)
-Q_DECLARE_METATYPE(KeyList)
-
 // Testing get/set functions
 void tst_QDateTimeEdit::getSetCheck()
 {
@@ -323,9 +316,6 @@ void tst_QDateTimeEdit::getSetCheck()
 
 tst_QDateTimeEdit::tst_QDateTimeEdit()
 {
-    qRegisterMetaType<QDate>("QDate");
-    qRegisterMetaType<QTime>("QTime");
-    qRegisterMetaType<QDateTime>("QDateTime");
     qRegisterMetaType<QList<int> >("QList<int>");
 }
 
@@ -3228,7 +3218,7 @@ void tst_QDateTimeEdit::cachedDayTest()
     testWidget->setDate(QDate(2007, 1, 30));
     testWidget->setCurrentSection(QDateTimeEdit::DaySection);
     //QTest::keyClick(testWidget->lineEdit(), Qt::Key_Up); // this doesn't work
-    //on Mac. QTestLib bug? ###
+    //on Mac. Qt Test bug? ###
     QTest::keyClick(testWidget, Qt::Key_Up);
     testWidget->setCurrentSection(QDateTimeEdit::MonthSection);
     QTest::keyClick(testWidget, Qt::Key_Up);
@@ -3452,9 +3442,7 @@ void tst_QDateTimeEdit::deleteCalendarWidget()
 typedef QPair<Qt::Key, Qt::KeyboardModifier> KeyPair;
 typedef QList<KeyPair> KeyPairList;
 
-Q_DECLARE_METATYPE(QLocale)
 Q_DECLARE_METATYPE(KeyPair)
-Q_DECLARE_METATYPE(KeyPairList)
 
 static inline KeyPair key(Qt::Key key, Qt::KeyboardModifier modifier = Qt::NoModifier) {
     return KeyPair(key, modifier);

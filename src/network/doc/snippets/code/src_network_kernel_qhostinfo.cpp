@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -39,8 +39,8 @@
 ****************************************************************************/
 
 //! [0]
-// To find the IP address of qt.nokia.com
-QHostInfo::lookupHost("qt.nokia.com",
+// To find the IP address of qt-project.org
+QHostInfo::lookupHost("qt-project.org",
                       this, SLOT(printResults(QHostInfo)));
 
 // To find the host name for 4.2.2.1
@@ -50,7 +50,7 @@ QHostInfo::lookupHost("4.2.2.1",
 
 
 //! [1]
-QHostInfo info = QHostInfo::fromName("qt.nokia.com");
+QHostInfo info = QHostInfo::fromName("qt-project.org");
 //! [1]
 
 

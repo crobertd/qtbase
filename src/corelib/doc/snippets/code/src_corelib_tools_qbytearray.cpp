@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the documentation of the Qt Toolkit.
@@ -251,14 +251,14 @@ ba.lastIndexOf("X");        // returns -1
 
 
 //! [25]
-QByteArray url("ftp://ftp.qt.nokia.com/");
+QByteArray url("ftp://ftp.qt-project.org/");
 if (url.startsWith("ftp:"))
     ...
 //! [25]
 
 
 //! [26]
-QByteArray url("http://qt.nokia.com/index.html");
+QByteArray url("http://qt-project.org/doc/qt-5.0/qtdoc/index.html");
 if (url.endsWith(".html"))
     ...
 //! [26]
@@ -286,16 +286,16 @@ QByteArray z = x.mid(5);        // z == "pineapples"
 
 
 //! [30]
-QByteArray x("Qt by NOKIA");
+QByteArray x("Qt by DIGIA");
 QByteArray y = x.toLower();
-// y == "qt by nokia"
+// y == "qt by digia"
 //! [30]
 
 
 //! [31]
-QByteArray x("Qt by NOKIA");
+QByteArray x("Qt by DIGIA");
 QByteArray y = x.toUpper();
-// y == "QT BY NOKIA"
+// y == "QT BY DIGIA"
 //! [31]
 
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -53,11 +53,6 @@
 typedef QList<int> IntList;
 typedef QPair<int, int> IntPair;
 typedef QList<IntPair> IntPairList;
-
-Q_DECLARE_METATYPE(IntList)
-Q_DECLARE_METATYPE(IntPair)
-Q_DECLARE_METATYPE(IntPairList)
-Q_DECLARE_METATYPE(QModelIndex)
 
 class tst_QSortFilterProxyModel : public QObject
 {
@@ -179,7 +174,6 @@ tst_QSortFilterProxyModel::tst_QSortFilterProxyModel()
 
 void tst_QSortFilterProxyModel::initTestCase()
 {
-    qRegisterMetaType<QModelIndex>("QModelIndex");
     qRegisterMetaType<IntList>("IntList");
     qRegisterMetaType<IntPair>("IntPair");
     qRegisterMetaType<IntPairList>("IntPairList");

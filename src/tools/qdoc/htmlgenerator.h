@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -59,6 +59,8 @@ class HelpProjectWriter;
 
 class HtmlGenerator : public Generator
 {
+    Q_DECLARE_TR_FUNCTIONS(QDoc::HtmlGenerator)
+
 public:
     enum SinceType {
         Namespace,
@@ -106,6 +108,7 @@ protected:
     virtual QString linkForNode(const Node *node, const Node *relative);
 
     void generateManifestFile(QString manifest, QString element);
+    void readManifestMetaContent(const Config &config);
 
 private:
     enum SubTitleSize { SmallSubTitle, LargeSubTitle };
@@ -114,6 +117,13 @@ private:
         DetailedDescriptionMark,
         MemberMark,
         EndMark
+    };
+
+    struct ManifestMetaFilter
+    {
+        QSet<QString> names;
+        QSet<QString> attributes;
+        QSet<QString> tags;
     };
 
     const QPair<QString,QString> anchorForNode(const Node *node);
@@ -240,6 +250,7 @@ private:
     bool obsoleteLinks;
     QStack<QXmlStreamWriter*> xmlWriterStack;
     static int id;
+    QList<ManifestMetaFilter> manifestMetaContent;
 public:
     static bool debugging_on;
     static QString divNavTop;

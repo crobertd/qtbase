@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -76,7 +76,7 @@ RSSListing::RSSListing(QWidget *parent)
 {
 
     lineEdit = new QLineEdit(this);
-    lineEdit->setText("http://labs.qt.nokia.com/blogs/feed");
+    lineEdit->setText("http://blog.qt.digia.com/feed/");
 
     fetchButton = new QPushButton(tr("Fetch"), this);
 

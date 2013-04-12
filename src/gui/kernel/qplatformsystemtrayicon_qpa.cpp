@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Copyright (C) 2012 Klaralvdalens Datakonsult AB, a KDAB Group company, info@kdab.com, author Christoph Schleifenbaum <christoph.schleifenbaum@kdab.com>
 ** Contact: http://www.qt-project.org/legal
 **
@@ -48,6 +48,7 @@ QT_BEGIN_NAMESPACE
 
 /*!
     \class QPlatformSystemTrayIcon
+    \inmodule QtGui
     \brief The QPlatformSystemTrayIcon class abstracts the system tray icon and interaction.
 
     \sa QSystemTray

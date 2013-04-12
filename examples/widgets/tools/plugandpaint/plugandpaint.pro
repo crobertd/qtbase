@@ -1,4 +1,6 @@
 #! [0]
+QT += widgets
+
 HEADERS        = interfaces.h \
                  mainwindow.h \
                  paintarea.h \
@@ -17,7 +19,5 @@ if(!debug_and_release|build_pass):CONFIG(debug, debug|release) {
 #! [0]
 
 # install
-target.path = $$[QT_INSTALL_EXAMPLES]/tools/plugandpaint
+target.path = $$[QT_INSTALL_EXAMPLES]/widgets/tools/plugandpaint
 INSTALLS += target
-
-QT += widgets

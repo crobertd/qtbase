@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -382,8 +382,6 @@ void tst_QCssParser::term()
         }
     }
 }
-
-Q_DECLARE_METATYPE(QVector<QCss::Value>)
 
 void tst_QCssParser::expr_data()
 {
@@ -842,7 +840,6 @@ void tst_QCssParser::invalidAtKeywords()
     QCOMPARE(rule.declarations.at(0).d->values.at(0).variant.toString(), QString("blue"));
 }
 
-Q_DECLARE_METATYPE(QColor)
 
 void tst_QCssParser::colorValue_data()
 {
@@ -1492,7 +1489,7 @@ void tst_QCssParser::gradient_data()
          "spread: repeat, stop:0.2 rgb(1, 2, 3), stop:0.5 rgba(1, 2, 3, 4))" << "conical" << QPointF(4, 2) << QPointF()
                              << 2 << qreal(0.2) << QColor(1, 2, 3) << qreal(0.5) << QColor(1, 2, 3, 4);
 
-    /* wont pass: stop values are expected to be sorted
+    /* won't pass: stop values are expected to be sorted
      QTest::newRow("unsorted-stop") <<
      "selection-background: lineargradient(x1:0, y1:0, x2:0, y2:1, "
          "stop:0.5 green, stop:0.2 red)" << QPointF(0, 0) << QPointF(0, 1)

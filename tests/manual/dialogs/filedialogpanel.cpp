@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the examples of the Qt Toolkit.
@@ -105,9 +105,9 @@ inline void setComboBoxValue(QComboBox *c, int v)
     c->setCurrentIndex(c->findData(QVariant(v)));
 }
 
-static inline void addButton(const QString &desription, QBoxLayout *layout, QObject *receiver, const char *slotFunc)
+static inline void addButton(const QString &description, QBoxLayout *layout, QObject *receiver, const char *slotFunc)
 {
-    QPushButton *button = new QPushButton(desription);
+    QPushButton *button = new QPushButton(description);
     QObject::connect(button, SIGNAL(clicked()), receiver, slotFunc);
     layout->addWidget(button);
 }

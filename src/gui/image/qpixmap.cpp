@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -759,6 +759,8 @@ bool QPixmap::load(const QString &fileName, const char *format, Qt::ImageConvers
         data.reset();
         return false;
     }
+
+    detach();
 
     QFileInfo info(fileName);
     QString key = QLatin1String("qt_pixmap")

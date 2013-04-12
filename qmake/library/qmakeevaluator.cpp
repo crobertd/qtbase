@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the qmake application of the Qt Toolkit.
@@ -453,9 +453,9 @@ void QMakeEvaluator::evaluateExpression(
             break; }
         case TokEnvVar: {
             const ProString &var = getStr(tokPtr);
-            const ProStringList &val = split_value_list(m_option->getEnv(var.toQString(m_tmp1)));
-            debugMsg(2, "env var %s => %s", dbgStr(var), dbgStrList(val));
-            addStrList(val, tok, ret, pending, joined);
+            const ProString &val = ProString(m_option->getEnv(var.toQString(m_tmp1)));
+            debugMsg(2, "env var %s => %s", dbgStr(var), dbgStr(val));
+            addStr(val, ret, pending, joined);
             break; }
         case TokFuncName: {
             const ProKey &func = getHashStr(tokPtr);
@@ -1052,7 +1052,7 @@ bool QMakeEvaluator::prepareProject(const QString &inDir)
             forever {
                 QString superfile = superdir + QLatin1String("/.qmake.super");
                 if (IoUtils::exists(superfile)) {
-                    m_superfile = superfile;
+                    m_superfile = QDir::cleanPath(superfile);
                     break;
                 }
                 QFileInfo qdfi(superdir);
@@ -1089,8 +1089,8 @@ bool QMakeEvaluator::prepareProject(const QString &inDir)
         } else {
             m_buildRoot = QFileInfo(cachefile).path();
         }
-        m_conffile = conffile;
-        m_cachefile = cachefile;
+        m_conffile = QDir::cleanPath(conffile);
+        m_cachefile = QDir::cleanPath(cachefile);
     }
   no_cache:
 

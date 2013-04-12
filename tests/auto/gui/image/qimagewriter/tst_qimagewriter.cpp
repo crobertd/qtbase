@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -58,11 +58,7 @@
 
 typedef QMap<QString, QString> QStringMap;
 typedef QList<int> QIntList;
-Q_DECLARE_METATYPE(QImage)
-Q_DECLARE_METATYPE(QStringMap)
-Q_DECLARE_METATYPE(QIntList)
 Q_DECLARE_METATYPE(QImageWriter::ImageWriterError)
-Q_DECLARE_METATYPE(QIODevice *)
 Q_DECLARE_METATYPE(QImage::Format)
 
 class tst_QImageWriter : public QObject

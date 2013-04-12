@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -85,7 +85,6 @@ public:
     void generateSystemVars();
 #endif
     void showSummary();
-    void findProjects( const QString& dirName );
     QString firstLicensePath();
 
 #if !defined(EVAL)
@@ -117,6 +116,7 @@ private:
     QStringList defaultBuildParts;
     QStringList buildParts;
     QStringList nobuildParts;
+    QStringList skipModules;
     QStringList licensedModules;
     QStringList allSqlDrivers;
     QStringList allConfigs;

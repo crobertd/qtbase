@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -154,12 +154,12 @@ public Q_SLOTS:
 
 Q_SIGNALS:
     void started(
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       QPrivateSignal
 #endif
     );
     void stopped(
-#if !defined(qdoc)
+#if !defined(Q_QDOC)
       QPrivateSignal
 #endif
     );

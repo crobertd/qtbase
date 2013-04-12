@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -53,7 +53,7 @@
 
 QT_BEGIN_NAMESPACE
 
-extern QImage qt_gl_read_framebuffer(const QSize&, bool, bool);
+extern QImage qt_gl_read_frame_buffer(const QSize&, bool, bool);
 
 #define QGL_FUNC_CONTEXT const QGLContext *ctx = QGLContext::currentContext();
 #define QGL_FUNCP_CONTEXT const QGLContext *ctx = QGLContext::currentContext();
@@ -751,8 +751,8 @@ void QGLFramebufferObjectPrivate::init(QGLFramebufferObject *q, const QSize &sz,
     Note that you need to create a QGLFramebufferObject with more than one
     sample per pixel for primitives to be antialiased when drawing using a
     QPainter. To create a multisample framebuffer object you should use one of
-    the constructors that take a QGLFramebufferObject parameter, and set the
-    QGLFramebufferObject::samples() property to a non-zero value.
+    the constructors that take a QGLFramebufferObjectFormat parameter, and set
+    the QGLFramebufferObjectFormat::samples() property to a non-zero value.
 
     When painting to a QGLFramebufferObject using QPainter, the state of
     the current GL context will be altered by the paint engine to reflect
@@ -1081,7 +1081,7 @@ QImage QGLFramebufferObject::toImage() const
     if (!d->valid)
         return QImage();
 
-    // qt_gl_read_framebuffer doesn't work on a multisample FBO
+    // qt_gl_read_frame_buffer doesn't work on a multisample FBO
     if (format().samples() != 0) {
         QGLFramebufferObject temp(size(), QGLFramebufferObjectFormat());
 
@@ -1094,7 +1094,7 @@ QImage QGLFramebufferObject::toImage() const
     bool wasBound = isBound();
     if (!wasBound)
         const_cast<QGLFramebufferObject *>(this)->bind();
-    QImage image = qt_gl_read_framebuffer(d->size, format().internalTextureFormat() != GL_RGB, true);
+    QImage image = qt_gl_read_frame_buffer(d->size, format().internalTextureFormat() != GL_RGB, true);
     if (!wasBound)
         const_cast<QGLFramebufferObject *>(this)->release();
 

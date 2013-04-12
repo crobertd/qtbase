@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -48,7 +48,7 @@
 $${includes}
 #include <QtCore/qglobal.h>
 
-int main()
+int main(int, char **)
 {
     qWarning(\"This is a compile test only\");
     return 0;

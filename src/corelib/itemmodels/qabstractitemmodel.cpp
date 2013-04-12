@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -1063,7 +1063,7 @@ void QAbstractItemModelPrivate::columnsRemoved(const QModelIndex &parent,
     The QAbstractItemModel class is one of the \l{Model/View Classes}
     and is part of Qt's \l{Model/View Programming}{model/view framework}. It
     can be used as the underlying data model for the item view elements in
-    QML or the item view classes in the QtWidgets module.
+    QML or the item view classes in the Qt Widgets module.
 
     If you need a model to use with an item view such as QML's List View
     element or the C++ widgets QListView or QTableView, you should consider
@@ -1437,7 +1437,7 @@ QAbstractItemModel::~QAbstractItemModel()
 
     For example:
 
-    \snippet itemviews/simpledommodel/dommodel.cpp 2
+    \snippet ../widgets/itemviews/simpledommodel/dommodel.cpp 2
 
     \note When implementing a table based model, columnCount() should return 0
     when the parent is valid.
@@ -2274,7 +2274,6 @@ void QAbstractItemModel::doSetRoleNames(const QHash<int,QByteArray> &roleNames)
 
     Returns the model's role names.
 
-    \sa setRoleNames()
 */
 QHash<int,QByteArray> QAbstractItemModel::roleNames() const
 {

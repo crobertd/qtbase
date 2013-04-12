@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -42,7 +42,10 @@
 #include "qcocoanativeinterface.h"
 #include "qcocoaglcontext.h"
 #include "qcocoawindow.h"
+#include "qcocoamenu.h"
 #include "qcocoamenubar.h"
+#include "qmacmime.h"
+#include "qcocoahelpers.h"
 
 #include <qbytearray.h>
 #include <qwindow.h>
@@ -58,6 +61,8 @@
 #include "qprintengine_mac_p.h"
 #include <qpa/qplatformprintersupport.h>
 #endif
+
+#include <Cocoa/Cocoa.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -91,6 +96,24 @@ void *QCocoaNativeInterface::nativeResourceForWindow(const QByteArray &resourceS
     } else if (resourceString == "nswindow") {
         return static_cast<QCocoaWindow *>(window->handle())->m_nsWindow;
     }
+    return 0;
+}
+
+QPlatformNativeInterface::NativeResourceForIntegrationFunction QCocoaNativeInterface::nativeResourceFunctionForIntegration(const QByteArray &resource)
+{
+    if (resource.toLower() == "addtomimelist")
+        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::addToMimeList);
+    if (resource.toLower() == "removefrommimelist")
+        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::removeFromMimeList);
+    if (resource.toLower() == "registerdraggedtypes")
+        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::registerDraggedTypes);
+    if (resource.toLower() == "setdockmenu")
+        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::setDockMenu);
+    if (resource.toLower() == "qimagetocgimage")
+        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::qImageToCGImage);
+    if (resource.toLower() == "cgimagetoqimage")
+        return NativeResourceForIntegrationFunction(QCocoaNativeInterface::cgImageToQImage);
+
     return 0;
 }
 
@@ -141,5 +164,39 @@ void *QCocoaNativeInterface::nsOpenGLContextForContext(QOpenGLContext* context)
     }
     return 0;
 }
+
+void QCocoaNativeInterface::addToMimeList(void *macPasteboardMime)
+{
+    qt_mac_addToGlobalMimeList(reinterpret_cast<QMacPasteboardMime *>(macPasteboardMime));
+}
+
+void QCocoaNativeInterface::removeFromMimeList(void *macPasteboardMime)
+{
+    qt_mac_removeFromGlobalMimeList(reinterpret_cast<QMacPasteboardMime *>(macPasteboardMime));
+}
+
+void QCocoaNativeInterface::registerDraggedTypes(const QStringList &types)
+{
+    qt_mac_registerDraggedTypes(types);
+}
+
+void QCocoaNativeInterface::setDockMenu(QPlatformMenu *platformMenu)
+{
+    QCocoaMenu *cocoaPlatformMenu = static_cast<QCocoaMenu *>(platformMenu);
+    NSMenu *menu = cocoaPlatformMenu->nsMenu();
+    // setDockMenu seems to be undocumented, but this is what Qt 4 did.
+    [NSApp setDockMenu: menu];
+}
+
+CGImageRef QCocoaNativeInterface::qImageToCGImage(const QImage &image)
+{
+    return qt_mac_toCGImage(image, false, 0);
+}
+
+QImage QCocoaNativeInterface::cgImageToQImage(CGImageRef image)
+{
+    return qt_mac_toQImage(image);
+}
+
 
 QT_END_NAMESPACE

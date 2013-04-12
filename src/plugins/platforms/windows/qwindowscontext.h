@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -80,6 +80,7 @@ struct QWindowsUser32DLL
                  const BLENDFUNCTION *, DWORD);
     typedef BOOL (WINAPI *UpdateLayeredWindowIndirect)(HWND, const UPDATELAYEREDWINDOWINFO *);
     typedef BOOL (WINAPI *IsHungAppWindow)(HWND);
+    typedef BOOL (WINAPI *SetProcessDPIAware)();
 
     // Functions missing in Q_CC_GNU stub libraries.
     SetLayeredWindowAttributes setLayeredWindowAttributes;
@@ -94,6 +95,9 @@ struct QWindowsUser32DLL
     UnregisterTouchWindow unregisterTouchWindow;
     GetTouchInputInfo getTouchInputInfo;
     CloseTouchInputHandle closeTouchInputHandle;
+
+    // Windows Vista onwards
+    SetProcessDPIAware setProcessDPIAware;
 };
 
 struct QWindowsShell32DLL
@@ -192,7 +196,7 @@ public:
 private:
     void handleFocusEvent(QtWindows::WindowsEventType et, QWindowsWindow *w);
 #ifndef QT_NO_CONTEXTMENU
-    void handleContextMenuEvent(QWindow *window, const MSG &msg);
+    bool handleContextMenuEvent(QWindow *window, const MSG &msg);
 #endif
     void unregisterWindowClasses();
 

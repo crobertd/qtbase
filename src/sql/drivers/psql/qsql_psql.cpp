@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtSql module of the Qt Toolkit.
@@ -53,6 +53,7 @@
 #include <qsocketnotifier.h>
 #include <qstringlist.h>
 #include <qmutex.h>
+#include <QtSql/private/qsqlresult_p.h>
 
 #include <libpq-fe.h>
 #include <pg_config.h>
@@ -183,6 +184,7 @@ class QPSQLResultPrivate
 {
 public:
     QPSQLResultPrivate(QPSQLResult *qq): q(qq), driver(0), result(0), currentSize(-1), preparedQueriesEnabled(false) {}
+    static QString fieldSerial(int i) { return QLatin1Char('$') + QString::number(i + 1); }
 
     QPSQLResult *q;
     const QPSQLDriverPrivate *driver;
@@ -515,29 +517,6 @@ void QPSQLResult::virtual_hook(int id, void *data)
     QSqlResult::virtual_hook(id, data);
 }
 
-static QString qReplacePlaceholderMarkers(const QString &query)
-{
-    const int originalLength = query.length();
-    bool inQuote = false;
-    int markerIdx = 0;
-    QString result;
-    result.reserve(originalLength + 23);
-    for (int i = 0; i < originalLength; ++i) {
-        const QChar ch = query.at(i);
-        if (ch == QLatin1Char('?') && !inQuote) {
-            result += QLatin1Char('$');
-            result += QString::number(++markerIdx);
-        } else {
-            if (ch == QLatin1Char('\''))
-                inQuote = !inQuote;
-            result += ch;
-        }
-    }
-
-    result.squeeze();
-    return result;
-}
-
 static QString qCreateParamString(const QVector<QVariant> boundValues, const QSqlDriver *driver)
 {
     if (boundValues.isEmpty())
@@ -581,7 +560,7 @@ bool QPSQLResult::prepare(const QString &query)
         qDeallocatePreparedStmt(d);
 
     const QString stmtId = qMakePreparedStmtId();
-    const QString stmt = QString::fromLatin1("PREPARE %1 AS ").arg(stmtId).append(qReplacePlaceholderMarkers(query));
+    const QString stmt = QString::fromLatin1("PREPARE %1 AS ").arg(stmtId).append(QSqlResultPrivate::positionalToNamedBinding(query, QPSQLResultPrivate::fieldSerial));
 
     PGresult *result = d->driver->exec(stmt);
 
@@ -695,25 +674,30 @@ QPSQLDriver::Protocol QPSQLDriverPrivate::getPSQLVersion()
             int vMaj = rx.cap(1).toInt();
             int vMin = rx.cap(2).toInt();
             serverVersion = qMakePSQLVersion(vMaj, vMin);
-#ifdef PG_MAJORVERSION
-            if (rx.indexIn(QLatin1String(PG_MAJORVERSION)) != -1) {
+#if defined(PG_MAJORVERSION)
+            if (rx.indexIn(QLatin1String(PG_MAJORVERSION)) != -1)
+#elif defined(PG_VERSION)
+            if (rx.indexIn(QLatin1String(PG_VERSION)) != -1)
+#else
+            if (0)
+#endif
+            {
                 vMaj = rx.cap(1).toInt();
                 vMin = rx.cap(2).toInt();
-            }
-            QPSQLDriver::Protocol clientVersion = qMakePSQLVersion(vMaj, vMin);
+                QPSQLDriver::Protocol clientVersion = qMakePSQLVersion(vMaj, vMin);
 
-            if (serverVersion >= QPSQLDriver::Version9 && clientVersion < QPSQLDriver::Version9) {
-                //Client version before QPSQLDriver::Version9 only supports escape mode for bytea type,
-                //but bytea format is set to hex by default in PSQL 9 and above. So need to force the
-                //server use the old escape mode when connects to the new server with old client library.
-                result = exec("SET bytea_output=escape; ");
-                status = PQresultStatus(result);
-            } else if (serverVersion == QPSQLDriver::VersionUnknown) {
-                serverVersion = clientVersion;
-                if (serverVersion != QPSQLDriver::VersionUnknown)
-                   qWarning("The server version of this PostgreSQL is unknown, falling back to the client version.");
+                if (serverVersion >= QPSQLDriver::Version9 && clientVersion < QPSQLDriver::Version9) {
+                    //Client version before QPSQLDriver::Version9 only supports escape mode for bytea type,
+                    //but bytea format is set to hex by default in PSQL 9 and above. So need to force the
+                    //server use the old escape mode when connects to the new server with old client library.
+                    result = exec("SET bytea_output=escape; ");
+                    status = PQresultStatus(result);
+                } else if (serverVersion == QPSQLDriver::VersionUnknown) {
+                    serverVersion = clientVersion;
+                    if (serverVersion != QPSQLDriver::VersionUnknown)
+                        qWarning("The server version of this PostgreSQL is unknown, falling back to the client version.");
+                }
             }
-#endif
         }
     }
     PQclear(result);
@@ -781,6 +765,7 @@ bool QPSQLDriver::hasFeature(DriverFeature f) const
     case SimpleLocking:
     case FinishQuery:
     case MultipleResultSets:
+    case CancelQuery:
         return false;
     case BLOB:
         return d->pro >= QPSQLDriver::Version71;
@@ -1202,8 +1187,7 @@ QString QPSQLDriver::formatValue(const QSqlField &field, bool trimStrings) const
             if (field.value().toDateTime().isValid()) {
                 QDate dt = field.value().toDateTime().date();
                 QTime tm = field.value().toDateTime().time();
-                // msecs need to be right aligned otherwise psql
-                // interpretes them wrong
+                // msecs need to be right aligned otherwise psql interprets them wrong
                 r = QLatin1Char('\'') + QString::number(dt.year()) + QLatin1Char('-')
                           + QString::number(dt.month()) + QLatin1Char('-')
                           + QString::number(dt.day()) + QLatin1Char(' ')

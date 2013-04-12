@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -102,6 +102,10 @@ void tst_QToolTip::task183679()
 {
     QFETCH(Qt::Key, key);
     QFETCH(bool, visible);
+
+#ifdef Q_OS_MAC
+    QSKIP("This test fails in the CI system, QTBUG-30040");
+#endif
 
     Widget_task183679 widget;
     widget.show();

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -131,6 +131,8 @@ public:
     virtual bool frameStrutEventsEnabled() const;
 
 protected:
+    static QString formatWindowTitle(const QString &title, const QString &separator);
+
     QScopedPointer<QPlatformWindowPrivate> d_ptr;
 private:
     Q_DISABLE_COPY(QPlatformWindow)

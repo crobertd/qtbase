@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -290,11 +290,14 @@ void QCosmeticStroker::setup()
         ppl = buffer->bytesPerLine()>>2;
     }
 
+    // line drawing produces different results with different clips, so
+    // we need to clip consistently when painting to the same device
+
     // setup FP clip bounds
-    xmin = clip.left() - 1;
-    xmax = clip.right() + 2;
-    ymin = clip.top() - 1;
-    ymax = clip.bottom() + 2;
+    xmin = deviceRect.left() - 1;
+    xmax = deviceRect.right() + 2;
+    ymin = deviceRect.top() - 1;
+    ymax = deviceRect.bottom() + 2;
 
     lastPixel.x = -1;
 }

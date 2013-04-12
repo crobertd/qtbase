@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtCore module of the Qt Toolkit.
@@ -643,11 +643,29 @@ Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
 */
 
 /*!
+    \typedef qintptr
+    \relates <QtGlobal>
+
+    Integral type for representing pointers in a signed integer (useful for
+    hashing, etc.).
+
+    Typedef for either qint32 or qint64. This type is guaranteed to
+    be the same size as a pointer on all platforms supported by Qt. On
+    a system with 32-bit pointers, qintptr is a typedef for qint32;
+    on a system with 64-bit pointers, qintptr is a typedef for
+    qint64.
+
+    Note that qintptr is signed. Use quintptr for unsigned values.
+
+    \sa qptrdiff, qint32, qint64
+*/
+
+/*!
     \typedef quintptr
     \relates <QtGlobal>
 
-    Integral type for representing a pointers (useful for hashing,
-    etc.).
+    Integral type for representing pointers in an unsigned integer (useful for
+    hashing, etc.).
 
     Typedef for either quint32 or quint64. This type is guaranteed to
     be the same size as a pointer on all platforms supported by Qt. On
@@ -827,6 +845,10 @@ Q_CORE_EXPORT void *qMemSet(void *dest, int c, size_t n);
     Turns the major, minor and patch numbers of a version into an
     integer, 0xMMNNPP (MM = major, NN = minor, PP = patch). This can
     be compared with another similarly processed version id.
+
+    Example:
+
+    \snippet code/src_corelib_global_qglobal.cpp qt-version-check
 
     \sa QT_VERSION
 */
@@ -1829,6 +1851,8 @@ const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion()
     that the current code execution cannot be reached. That is, Q_ASSUME(false)
     is equivalent to Q_UNREACHABLE().
 
+    In debug builds the condition is enforced by an assert to facilitate debugging.
+
     \note Q_LIKELY() tells the compiler that the expression is likely, but not
     the only possibility. Q_ASSUME tells the compiler that it is the only
     possibility.
@@ -1862,6 +1886,8 @@ const QSysInfo::WinVersion QSysInfo::WindowsVersion = QSysInfo::windowsVersion()
 
     By using this macro in impossible conditions, code coverage may be improved
     as dead code paths may be eliminated.
+
+    In debug builds the condition is enforced by an assert to facilitate debugging.
 
     \sa Q_ASSERT(), Q_ASSUME(), qFatal()
 */

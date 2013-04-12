@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtNetwork module of the Qt Toolkit.
@@ -186,7 +186,7 @@ QNetworkReplyHttpImpl::QNetworkReplyHttpImpl(QNetworkAccessManager* const manage
 
 
     // Internal code that does a HTTP reply for the synchronous Ajax
-    // in QtWebKit.
+    // in Qt WebKit.
     QVariant synchronousHttpAttribute = request.attribute(
             static_cast<QNetworkRequest::Attribute>(QNetworkRequest::SynchronousRequestAttribute));
     if (synchronousHttpAttribute.isValid()) {
@@ -663,7 +663,7 @@ void QNetworkReplyHttpImplPrivate::postRequest()
         // unsuitable proxies
         QMetaObject::invokeMethod(q, "_q_error", synchronous ? Qt::DirectConnection : Qt::QueuedConnection,
                                   Q_ARG(QNetworkReply::NetworkError, QNetworkReply::ProxyNotFoundError),
-                                  Q_ARG(QString, q->tr("No suitable proxy found")));
+                                  Q_ARG(QString, QNetworkReplyHttpImpl::tr("No suitable proxy found")));
         QMetaObject::invokeMethod(q, "_q_finished", synchronous ? Qt::DirectConnection : Qt::QueuedConnection);
         return;
     }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -853,8 +853,9 @@ QFont QFontDialog::selectedFont() const
 */
 void QFontDialog::setOption(FontDialogOption option, bool on)
 {
-    Q_D(QFontDialog);
-    d->options->setOption(static_cast<QFontDialogOptions::FontDialogOption>(option), on);
+    const QFontDialog::FontDialogOptions previousOptions = options();
+    if (!(previousOptions & option) != !on)
+        setOptions(previousOptions ^ option);
 }
 
 /*!

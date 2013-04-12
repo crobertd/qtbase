@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -109,7 +109,7 @@ bool QMacPrintEngine::end()
     if (d->state == QPrinter::Aborted)
         return true;  // I was just here a function call ago :)
     if (d->paintEngine->type() == QPaintEngine::CoreGraphics) {
-        // We dont need the paint engine to call restoreGraphicsState()
+        // We don't need the paint engine to call restoreGraphicsState()
         static_cast<QCoreGraphicsPaintEngine*>(d->paintEngine)->d_func()->stackCount = 0;
         static_cast<QCoreGraphicsPaintEngine*>(d->paintEngine)->d_func()->hd = 0;
     }

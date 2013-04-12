@@ -1,11 +1,11 @@
+requires(qtHaveModule(dbus))
+
 TEMPLATE = subdirs
 SUBDIRS = listnames \
 	  pingpong \
 	  complexpingpong
 
-!contains(QT_CONFIG, no-widgets) {
+qtHaveModule(widgets) {
     SUBDIRS += chat \
                remotecontrolledcar
 }
-
-QT += widgets

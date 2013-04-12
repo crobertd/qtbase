@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -72,6 +72,10 @@ typedef GLXContext (*glXCreateContextAttribsARBProc)(Display*, GLXFBConfig, GLXC
 
 #ifndef GLX_CONTEXT_PROFILE_MASK_ARB
 #define GLX_CONTEXT_PROFILE_MASK_ARB 0x9126
+#endif
+
+#ifndef GL_CONTEXT_FLAG_DEBUG_BIT
+#define GL_CONTEXT_FLAG_DEBUG_BIT 0x00000002
 #endif
 
 static Window createDummyWindow(QXcbScreen *screen, XVisualInfo *visualInfo)
@@ -168,6 +172,8 @@ static void updateFormatFromContext(QSurfaceFormat &format)
         format.setMinorVersion(minor);
     }
 
+    format.setProfile(QSurfaceFormat::NoProfile);
+
     const int version = (major << 8) + minor;
     if (version < 0x0300) {
         format.setProfile(QSurfaceFormat::NoProfile);
@@ -179,9 +185,9 @@ static void updateFormatFromContext(QSurfaceFormat &format)
     // a debug context
     GLint value = 0;
     glGetIntegerv(GL_CONTEXT_FLAGS, &value);
-    if (value & ~GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT)
+    if (!(value & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT))
         format.setOption(QSurfaceFormat::DeprecatedFunctions);
-    if (value & GLX_CONTEXT_DEBUG_BIT_ARB)
+    if (value & GL_CONTEXT_FLAG_DEBUG_BIT)
         format.setOption(QSurfaceFormat::DebugContext);
     if (version < 0x0302)
         return;
@@ -189,17 +195,11 @@ static void updateFormatFromContext(QSurfaceFormat &format)
     // Version 3.2 and newer have a profile
     value = 0;
     glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &value);
-    switch (value) {
-    case GLX_CONTEXT_CORE_PROFILE_BIT_ARB:
+
+    if (value & GL_CONTEXT_CORE_PROFILE_BIT)
         format.setProfile(QSurfaceFormat::CoreProfile);
-        break;
-    case GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB:
+    else if (value & GL_CONTEXT_COMPATIBILITY_PROFILE_BIT)
         format.setProfile(QSurfaceFormat::CompatibilityProfile);
-        break;
-    default:
-        format.setProfile(QSurfaceFormat::NoProfile);
-        break;
-    }
 }
 
 /*!
@@ -284,8 +284,11 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
         glXCreateContextAttribsARBProc glXCreateContextAttribsARB = 0;
         glXCreateContextAttribsARB = (glXCreateContextAttribsARBProc) glXGetProcAddress((const GLubyte*)"glXCreateContextAttribsARB");
 
+        QList<QByteArray> glxExt = QByteArray(glXQueryExtensionsString(DISPLAY_FROM_XCB(m_screen), m_screen->screenNumber())).split(' ');
+        bool supportsProfiles = glxExt.contains("GLX_ARB_create_context_profile");
+
         // Use glXCreateContextAttribsARB if is available
-        if (glXCreateContextAttribsARB != 0) {
+        if (glxExt.contains("GLX_ARB_create_context") && glXCreateContextAttribsARB != 0) {
             // We limit the requested version by the version of the static context as
             // glXCreateContextAttribsARB fails and returns NULL if the requested context
             // version is not supported. This means that we will get the closest supported
@@ -302,14 +305,24 @@ QGLXContext::QGLXContext(QXcbScreen *screen, const QSurfaceFormat &format, QPlat
                               << GLX_CONTEXT_MINOR_VERSION_ARB << minorVersion;
 
             // If asking for OpenGL 3.2 or newer we should also specify a profile
-            if (m_format.majorVersion() > 3 || (m_format.majorVersion() == 3 && m_format.minorVersion() > 1)) {
-                if (m_format.profile() == QSurfaceFormat::CoreProfile) {
-                    contextAttributes << GLX_CONTEXT_FLAGS_ARB << GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB
-                                      << GLX_CONTEXT_PROFILE_MASK_ARB << GLX_CONTEXT_CORE_PROFILE_BIT_ARB;
-                } else {
+            if (supportsProfiles && (m_format.majorVersion() > 3 || (m_format.majorVersion() == 3 && m_format.minorVersion() > 1))) {
+                if (m_format.profile() == QSurfaceFormat::CoreProfile)
+                    contextAttributes << GLX_CONTEXT_PROFILE_MASK_ARB << GLX_CONTEXT_CORE_PROFILE_BIT_ARB;
+                else
                     contextAttributes << GLX_CONTEXT_PROFILE_MASK_ARB << GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
-                }
             }
+
+            int flags = 0;
+
+            if (m_format.testOption(QSurfaceFormat::DebugContext))
+                flags |= GLX_CONTEXT_DEBUG_BIT_ARB;
+
+            // A forward-compatible context may be requested for 3.0 and later
+            if (m_format.majorVersion() >= 3 && !m_format.testOption(QSurfaceFormat::DeprecatedFunctions))
+                flags |= GLX_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB;
+
+            if (flags != 0)
+                contextAttributes << GLX_CONTEXT_FLAGS_ARB << flags;
 
             contextAttributes << None;
 

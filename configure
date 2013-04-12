@@ -1,7 +1,7 @@
 #!/bin/sh
 #############################################################################
 ##
-## Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+## Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ## Contact: http://www.qt-project.org/legal
 ##
 ## This file is the build configuration utility of the Qt Toolkit.
@@ -777,6 +777,7 @@ CFG_SQL_AVAILABLE=
 QT_DEFAULT_BUILD_PARTS="libs tools examples"
 CFG_BUILD_PARTS=""
 CFG_NOBUILD_PARTS=""
+CFG_SKIP_MODULES=""
 CFG_RELEASE_QMAKE=no
 CFG_AUDIO_BACKEND=auto
 CFG_V8SNAPSHOT=auto
@@ -831,6 +832,7 @@ CFG_AVX=auto
 CFG_AVX2=auto
 CFG_REDUCE_RELOCATIONS=auto
 CFG_ACCESSIBILITY=auto
+CFG_ACCESSIBILITY_ATSPI_BRIDGE=no # will be enabled depending on dbus and accessibility being enabled
 CFG_IWMMXT=no
 CFG_NEON=auto
 CFG_MIPS_DSP=auto
@@ -861,7 +863,6 @@ PLATFORM=$QMAKESPEC
 QT_CROSS_COMPILE=no
 OPT_CONFIRM_LICENSE=no
 OPT_SHADOW=maybe
-OPT_FAST=auto
 OPT_VERBOSE=no
 OPT_HELP=
 CFG_SILENT=no
@@ -995,7 +996,7 @@ while [ "$#" -gt 0 ]; do
         VAL=no
         ;;
     #Qt style options that pass an argument
-    -prefix|-docdir|-headerdir|-plugindir|-importdir|-qmldir|-archdatadir|-datadir|-libdir|-bindir|-libexecdir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-platform|-xplatform|-device|-device-option|-sdk|-arch|-host-arch|-mysql_config|-sysroot|-hostdatadir|-hostbindir|-qpa|-qconfig)
+    -prefix|-docdir|-headerdir|-plugindir|-importdir|-qmldir|-archdatadir|-datadir|-libdir|-bindir|-libexecdir|-translationdir|-sysconfdir|-examplesdir|-testsdir|-depths|-make|-nomake|-skip|-platform|-xplatform|-device|-device-option|-sdk|-arch|-host-arch|-mysql_config|-sysroot|-hostdatadir|-hostbindir|-qpa|-qconfig)
         VAR=`echo $1 | sed "s,^-\(.*\),\1,"`
         shift
         VAL="$1"
@@ -1109,18 +1110,10 @@ while [ "$#" -gt 0 ]; do
             VAL=`echo $1 | sed 's,-R,,'`
         fi
         ;;
-    -largefile)
-        VAR="largefile"
-        VAL="yes"
-        ;;
-    -l?*|-l)
+    -l)  # -lfoo is handled differently
         VAR="add_link"
-        if [ "$1" = "-l" ]; then
-            shift
-            VAL="$1"
-        else
-            VAL=`echo $1 | sed 's,-l,,'`
-        fi
+        shift
+        VAL="$1"
         ;;
     -F?*|-F)
         VAR="add_fpath"
@@ -1131,14 +1124,10 @@ while [ "$#" -gt 0 ]; do
             VAL=`echo $1 | sed 's,-F,,'`
         fi
         ;;
-    -fw?*|-fw)
+    -fw)  # -fwfoo is handled differently
         VAR="add_framework"
-        if [ "$1" = "-fw" ]; then
-            shift
-            VAL="$1"
-        else
-            VAL=`echo $1 | sed 's,-fw,,'`
-        fi
+        shift
+        VAL="$1"
         ;;
     -W*)
         VAR="add_warn"
@@ -1288,6 +1277,14 @@ while [ "$#" -gt 0 ]; do
     make)
 	CFG_BUILD_PARTS="$CFG_BUILD_PARTS $VAL"
         ;;
+    skip)
+        VAL=qt${VAL#qt}
+        if ! [ -d $relpath/../$VAL ]; then
+            echo "Attempting to skip non-existent module $VAL." >&2
+            exit 1
+        fi
+        CFG_SKIP_MODULES="$CFG_SKIP_MODULES $VAL"
+        ;;
     sdk)
         if [ "$BUILD_ON_MAC" = "yes" ]; then
             CFG_SDK="$VAL"
@@ -1410,7 +1407,7 @@ while [ "$#" -gt 0 ]; do
     device-option)
         DEV_VAR=`echo $VAL | sed "s,^\(.*\)=.*,\1,"`
         DEV_VAL=`echo $VAL | sed "s,^.*=\(.*\),\1,"`
-        DeviceVar set $DEV_VAR $DEV_VAL
+        DeviceVar set $DEV_VAR "$DEV_VAL"
         ;;
     qpa)
         QT_QPA_DEFAULT_PLATFORM="$VAL"
@@ -2015,13 +2012,6 @@ while [ "$#" -gt 0 ]; do
             UNKNOWN_OPT=yes
         fi
         ;;
-    fast)
-        if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
-            OPT_FAST="$VAL"
-        else
-            UNKNOWN_OPT=yes
-        fi
-        ;;
     rpath)
         if [ "$VAL" = "yes" ] || [ "$VAL" = "no" ]; then
             CFG_RPATH="$VAL"
@@ -2124,6 +2114,16 @@ while [ "$#" -gt 0 ]; do
             else
                 UNKNOWN_OPT=yes
             fi
+        else
+            UNKNOWN_OPT=yes
+        fi
+        ;;
+    l*)  # -lfoo
+        L_FLAGS="$L_FLAGS -l\"${VAR#l}\""
+        ;;
+    fw*)  # -fwfoo
+        if [ "$BUILD_ON_MAC" = "yes" ]; then
+            L_FLAGS="$L_FLAGS -framework \"${VAR#fw}\""
         else
             UNKNOWN_OPT=yes
         fi
@@ -2239,7 +2239,7 @@ if [ "$OPT_SHADOW" = "yes" ]; then
     if [ -x "$relpath/bin/syncqt" ]; then
         mkdir -p "$outpath/bin"
         echo "#!/bin/sh" >"$outpath/bin/syncqt"
-        echo "perl \"$relpath/bin/syncqt\" -mkspecsdir \"$outpath/mkspecs\" \"\$@\"" >>"$outpath/bin/syncqt"
+        echo "perl \"$relpath/bin/syncqt\" \"\$@\"" >>"$outpath/bin/syncqt"
         chmod 755 "$outpath/bin/syncqt"
     fi
 
@@ -2303,14 +2303,6 @@ if [ ! -d "${outpath}/lib/fonts" ]; then
         mkdir -p "${outpath}/lib"
         ln -s "${relpath}/lib/fonts" "${outpath}/lib/fonts"
     fi
-fi
-
-if [ "$OPT_FAST" = "auto" ]; then
-   if [ '!' -z "$AWK" ] && [ "$CFG_DEV" = "yes" ]; then
-       OPT_FAST=yes
-   else
-       OPT_FAST=no
-   fi
 fi
 
 # find a make command
@@ -2639,6 +2631,11 @@ else
     CFG_FRAMEWORK=no
 fi
 
+# disable GTK style support auto-detection on Mac
+if [ "$BUILD_ON_MAC" = "yes" ] && [ "$CFG_QGTKSTYLE" = "auto" ]; then
+    CFG_QGTKSTYLE=no
+fi
+
 QMAKE_CONF_COMPILER=`getXQMakeConf QMAKE_CXX`
 
 TEST_COMPILER=$QMAKE_CONF_COMPILER
@@ -2755,6 +2752,7 @@ libdirs=`echo "$gccout" | sed -n -e 's/^LIBRARY_PATH=\(.*\)/\1/p'`
 DEFAULT_LIBDIRS=`IFS=:; for i in $libdirs; do test -d "$i" && cd "$i" && pwd; done | sort -u`
 DEFAULT_INCDIRS=`echo "$gccout" | awk '
 /^End of search/ { yup=0 }
+/ \(framework directory\)$/ { next }
 yup { print substr($0, 2) }
 /^\#include </ { yup=1 }
 ' | sort -u`
@@ -2825,8 +2823,14 @@ if [ -z "$QT_INSTALL_BINS" ]; then #default
 fi
 QT_INSTALL_BINS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_BINS"`
 
+if [ "$XPLATFORM_MINGW" = "yes" ]; then
+    QT_INSTALL_LIBEXECS_DIRNAME="bin"
+else
+    QT_INSTALL_LIBEXECS_DIRNAME="libexec"
+fi
+
 if [ -z "$QT_INSTALL_LIBEXECS" ]; then #default
-    QT_INSTALL_LIBEXECS="$QT_INSTALL_ARCHDATA/libexec" #fallback
+    QT_INSTALL_LIBEXECS="$QT_INSTALL_ARCHDATA/$QT_INSTALL_LIBEXECS_DIRNAME" #fallback
 fi
 QT_INSTALL_LIBEXECS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_LIBEXECS"`
 
@@ -2860,7 +2864,7 @@ if [ -z "$QT_INSTALL_SETTINGS" ]; then #default
     if [ "$BUILD_ON_MAC" = "yes" ]; then
         QT_INSTALL_SETTINGS=/Library/Preferences/Qt
     else
-        QT_INSTALL_SETTINGS=/etc/xdg
+        QT_INSTALL_SETTINGS=$QT_INSTALL_PREFIX/etc/xdg
     fi
 fi
 QT_INSTALL_SETTINGS=`"$relpath/config.tests/unix/makeabs" "$QT_INSTALL_SETTINGS"`
@@ -3048,7 +3052,7 @@ Installation options:
     -plugindir <dir> ...... Plugins will be installed to <dir>
                             (default ARCHDATADIR/plugins)
     -libexecdir <dir> ..... Program executables will be installed to <dir>
-                            (default ARCHDATADIR/libexec)
+                            (default ARCHDATADIR/$QT_INSTALL_LIBEXECS_DIRNAME)
     -importdir <dir> ...... Imports for QML1 will be installed to <dir>
                             (default ARCHDATADIR/imports)
     -qmldir <dir> ......... Imports for QML2 will be installed to <dir>
@@ -3060,7 +3064,7 @@ Installation options:
     -translationdir <dir> . Translations of Qt programs will be installed to <dir>
                             (default DATADIR/translations)
     -sysconfdir <dir> ..... Settings used by Qt programs will be looked for in <dir>
-                            (default PREFIX/etc/settings)
+                            (default PREFIX/etc/xdg)
     -examplesdir <dir> .... Examples will be installed to <dir>
                             (default PREFIX/examples)
     -testsdir <dir> ....... Tests will be installed to <dir>
@@ -3099,20 +3103,18 @@ Configure options:
     -fully-process ..... Generate Makefiles for the entire Qt tree.
     -dont-process ...... Do not generate any Makefiles.
 
- *  -no-fast ........... Configure Qt normally by generating Makefiles for all
-                         project files.
-    -fast .............. Configure Qt quickly by generating Makefiles only for
-                         library and subdirectory targets.  All other Makefiles
-                         are created as wrappers, which will in turn run qmake.
-
     -no-largefile ...... Disables large file support.
  +  -largefile ......... Enables Qt to access files larger than 4 GB.
 
     -no-accessibility .. Do not compile Accessibility support.
+                         Disabling accessibility is not recommended, as it will break QStyle
+                         and may break other internal parts of Qt.
+                         With this switch you create a source incompatible version of Qt,
+                         which is unsupported.
  +  -accessibility ..... Compile Accessibility support.
 
     -no-sql-<driver> ... Disable SQL <driver> entirely.
-    -qt-sql-<driver> ... Enable a SQL <driver> in the QtSql library, by default
+    -qt-sql-<driver> ... Enable a SQL <driver> in the Qt SQL module, by default
                          none are turned on.
     -plugin-sql-<driver> Enable SQL <driver> as a plugin to be linked to
                          at run time.
@@ -3198,11 +3200,13 @@ Additional options:
                          ($QT_DEFAULT_BUILD_PARTS)
     -nomake <part> ..... Exclude part from the list of parts to be built.
 
-    -no-gui ............ Don't build the QtGui library and dependencies.
- +  -gui ............... Build the QtGui library and dependencies.
+    -skip <module> ..... Exclude an entire module from the build.
 
-    -no-widgets ........ Don't build the QtWidgets library and dependencies.
- +  -widgets ........... Build the QtWidgets library and dependencies.
+    -no-gui ............ Don't build the Qt GUI module and dependencies.
+ +  -gui ............... Build the Qt GUI module and dependencies.
+
+    -no-widgets ........ Don't build the Qt Widgets module and dependencies.
+ +  -widgets ........... Build the Qt Widgets module and dependencies.
 
     -R <string> ........ Add an explicit runtime library path to the Qt
                          libraries.
@@ -3244,9 +3248,9 @@ Additional options:
  $PHN  -no-pch ............ Do not use precompiled header support.
  $PHY  -pch ............... Use precompiled header support.
 
- $DBN  -no-dbus ........... Do not compile the QtDBus module.
- $DBY  -dbus .............. Compile the QtDBus module and dynamically load libdbus-1.
-    -dbus-linked ....... Compile the QtDBus module and link to libdbus-1.
+ $DBN  -no-dbus ........... Do not compile the Qt D-Bus module.
+ $DBY  -dbus .............. Compile the Qt D-Bus module and dynamically load libdbus-1.
+    -dbus-linked ....... Compile the Qt D-Bus module and link to libdbus-1.
 
     -reduce-relocations ..... Reduce relocations in the libraries through extra
                               linker optimizations (Qt/X11 and Qt for Embedded Linux only;
@@ -3611,7 +3615,7 @@ setBootstrapVariable()
 
 # build qmake
 if true; then ###[ '!' -f "$outpath/bin/qmake" ];
-    echo "Creating qmake. Please wait..."
+    echo "Creating qmake..."
 
     mkdir -p "$outpath/qmake" || exit
     # fix makefiles
@@ -3721,6 +3725,8 @@ if true; then ###[ '!' -f "$outpath/bin/qmake" ];
 
     (cd "$outpath/qmake"; "$MAKE") || exit 2
 fi # Build qmake
+
+echo "Running configuration tests..."
 
 #-------------------------------------------------------------------------------
 # create a qt.conf for the Qt build tree itself
@@ -4447,7 +4453,7 @@ if [ "$CFG_DBUS" != "no" ]; then
         elif [ "$CFG_CONFIGURE_EXIT_ON_ERROR" = "yes" ]; then
             # CFG_DBUS is "yes" or "linked" here
 
-            echo "The QtDBus module cannot be enabled because libdbus-1 version $MIN_DBUS_1_VERSION was not found."
+            echo "The Qt D-Bus module cannot be enabled because libdbus-1 version $MIN_DBUS_1_VERSION was not found."
             echo " Turn on verbose messaging (-v) to $0 to see the final report."
             echo " If you believe this message is in error you may use the continue"
             echo " switch (-continue) to $0 to continue."
@@ -4965,20 +4971,19 @@ if [ "$CFG_KMS" = "yes" ]; then
 fi
 
 # Detect accessibility support
-if [ "$CFG_ACCESSIBILITY" != "no" ]; then
-    if [ "$CFG_XCB" = "no" ]; then
-        CFG_ACCESSIBILITY=yes
-    else
-        # linux/xcb accessibility needs dbus
-        if [ "$CFG_DBUS" != "no" ] && [ -n "$PKG_CONFIG" ]; then
-            CFG_ACCESSIBILITY=yes
+if [ "$CFG_ACCESSIBILITY" = "no" ]; then
+    echo >&2 "Warning: Disabling Accessibility. This version of Qt is unsupported."
+else
+    CFG_ACCESSIBILITY=yes
+
+    # linux/xcb accessibility bridge needs dbus
+    if [ "$CFG_XCB" != "no" ]; then
+        if [ "$CFG_DBUS" != "no" ]; then
+            CFG_ACCESSIBILITY_ATSPI_BRIDGE=yes
+            QT_CONFIG="$QT_CONFIG accessibility-atspi-bridge"
         else
-            if [ "$CFG_ACCESSIBILITY" = "auto" ]; then
-                CFG_ACCESSIBILITY=no
-            else
-                echo "Accessibility support needs DBus."
-                exit 101
-            fi
+            echo >&2 "Warning: Disabling Linux Accessibility Bridge: DBus is missing."
+            QCONFIG_FLAGS="$QCONFIG_FLAGS QT_NO_ACCESSIBILITY_ATSPI_BRIDGE"
         fi
     fi
 fi
@@ -5336,9 +5341,11 @@ fi
 if [ "$CFG_SHARED" = "yes" ]; then
     QMAKE_OUTDIR="${QMAKE_OUTDIR}-shared"
     QT_CONFIG="$QT_CONFIG shared"
+    QTCONFIG_CONFIG="$QTCONFIG_CONFIG shared"
 elif [ "$CFG_SHARED" = "no" ]; then
     QMAKE_OUTDIR="${QMAKE_OUTDIR}-static"
     QT_CONFIG="$QT_CONFIG static"
+    QTCONFIG_CONFIG="$QTCONFIG_CONFIG static"
 fi
 
 #FIXME: qpa is implicit this should all be removed
@@ -5667,7 +5674,7 @@ EOF
 esac
 
 if [ "$CFG_GUI" = "no" ]; then
-    # WebKit requires QtGui
+    # WebKit requires Qt GUI
     canBuildWebKit="no"
 fi
 
@@ -6088,6 +6095,9 @@ QTMODULE="$outpath/mkspecs/qmodule.pri"
 
 echo "CONFIG += $QMAKE_CONFIG" >> "$QTMODULE.tmp"
 echo "QT_BUILD_PARTS += $CFG_BUILD_PARTS" >> "$QTMODULE.tmp"
+if [ -n "$CFG_SKIP_MODULES" ]; then
+    echo "QT_SKIP_MODULES += $CFG_SKIP_MODULES" >> "$QTMODULE.tmp"
+fi
 
 if [ -n "$QT_CFLAGS_PSQL" ]; then
     echo "QT_CFLAGS_PSQL   = $QT_CFLAGS_PSQL" >> "$QTMODULE.tmp"
@@ -6205,12 +6215,12 @@ if [ -n "$PKG_CONFIG" ]; then
 else
     echo "pkg-config ............. no"
 fi
-[ "$CFG_DBUS" = "no" ]     && echo "QtDBus module .......... no"
-[ "$CFG_DBUS" = "yes" ]    && echo "QtDBus module .......... yes (run-time)"
-[ "$CFG_DBUS" = "linked" ] && echo "QtDBus module .......... yes (linked)"
-echo "QtConcurrent code ...... $CFG_CONCURRENT"
-echo "QtGui module ........... $CFG_GUI"
-echo "QtWidgets module ....... $CFG_WIDGETS"
+[ "$CFG_DBUS" = "no" ]     && echo "Qt D-Bus module ........ no"
+[ "$CFG_DBUS" = "yes" ]    && echo "Qt D-Bus module ........ yes (run-time)"
+[ "$CFG_DBUS" = "linked" ] && echo "Qt D-Bus module ........ yes (linked)"
+echo "Qt Concurrent code ..... $CFG_CONCURRENT"
+echo "Qt GUI module .......... $CFG_GUI"
+echo "Qt Widgets module ...... $CFG_WIDGETS"
 if [ "$CFG_JAVASCRIPTCORE_JIT" = "auto" ]; then
     echo "JavaScriptCore JIT ..... To be decided by JavaScriptCore"
 else
@@ -6374,43 +6384,6 @@ if [ "$CFG_PROCESS" != "no" ]; then
         echo "Done"
     else
         "$outpath/bin/qmake" "$relpath"
-    fi
-
-    if [ "$OPT_FAST" = "yes" ]; then
-        PART_ROOTS=
-        for part in $CFG_BUILD_PARTS; do
-            case "$part" in
-            examples|tests) PART_ROOTS="$PART_ROOTS $part" ;;
-            esac
-        done
-        if [ "x$PART_ROOTS" != "x" ]; then
-            echo
-            echo "Creating stub makefiles. Please wait..."
-            QMAKE="$outpath/bin/qmake"
-            [ "$CFG_DEBUG_RELEASE" = "no" ] && first_tgt="first_target: first" || first_tgt=
-            (cd "$relpath" && find $PART_ROOTS -name '*.pro') | grep -v /testdata/ | while read p; do
-                d=${p%/*}
-                test -f "$outpath/$d/Makefile" && continue
-                echo "  for $relpath/$p"
-
-                mkdir -p "$outpath/$d" || exit
-                cat > "$outpath/$d/Makefile" <<EOF || exit
-# $outpath/$d/Makefile: generated by configure
-#
-# WARNING: This makefile will be replaced with a real makefile.
-# All changes made to this file will be lost.
-
-QMAKE = "$QMAKE"
-
-$first_tgt
-all clean install qmake first Makefile: FORCE
-	\$(QMAKE) $QMAKE_SWITCHES "$relpath/$p"
-	\$(MAKE) \$@
-FORCE:
-EOF
-            done || exit
-            echo "Done"
-        fi
     fi
 fi
 

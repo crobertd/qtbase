@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the plugins of the Qt Toolkit.
@@ -42,6 +42,8 @@
 #ifndef QCOCOANATIVEINTERFACE_H
 #define QCOCOANATIVEINTERFACE_H
 
+#include <ApplicationServices/ApplicationServices.h>
+
 #include <qpa/qplatformnativeinterface.h>
 
 QT_BEGIN_NAMESPACE
@@ -49,6 +51,7 @@ QT_BEGIN_NAMESPACE
 class QWidget;
 class QPlatformPrinterSupport;
 class QPrintEngine;
+class QPlatformMenu;
 
 class QCocoaNativeInterface : public QPlatformNativeInterface
 {
@@ -58,6 +61,8 @@ public:
 
     void *nativeResourceForContext(const QByteArray &resourceString, QOpenGLContext *context);
     void *nativeResourceForWindow(const QByteArray &resourceString, QWindow *window);
+
+    NativeResourceForIntegrationFunction nativeResourceFunctionForIntegration(const QByteArray &resource) Q_DECL_OVERRIDE;
 
     static void *cglContextForContext(QOpenGLContext *context);
     static void *nsOpenGLContextForContext(QOpenGLContext* context);
@@ -80,9 +85,23 @@ private:
     Q_INVOKABLE QPlatformPrinterSupport *createPlatformPrinterSupport();
     /*
         Function to return the NSPrintInfo * from QMacPaintEnginePrivate.
-        Needed by the native print dialog in the QtPrintSupport library.
+        Needed by the native print dialog in the Qt Print Support module.
     */
     Q_INVOKABLE void *NSPrintInfoForPrintEngine(QPrintEngine *printEngine);
+
+    // QMacPastebardMime support. The mac pasteboard void pointers are
+    // QMacPastebardMime instances from the cocoa plugin or qtmacextras
+    // These two classes are kept in sync and can be casted between.
+    static void addToMimeList(void *macPasteboardMime);
+    static void removeFromMimeList(void *macPasteboardMime);
+    static void registerDraggedTypes(const QStringList &types);
+
+    // Dock menu support
+    static void setDockMenu(QPlatformMenu *platformMenu);
+
+    // QImage <-> CGImage conversion functions
+    static CGImageRef qImageToCGImage(const QImage &image);
+    static QImage cgImageToQImage(CGImageRef image);
 };
 
 #endif // QCOCOANATIVEINTERFACE_H

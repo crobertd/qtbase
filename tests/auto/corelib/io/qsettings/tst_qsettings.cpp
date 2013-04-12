@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the test suite of the Qt Toolkit.
@@ -758,7 +758,6 @@ void tst_QSettings::testErrorHandling()
 #endif // !Q_OS_WIN
 }
 
-Q_DECLARE_METATYPE(QVariant)
 Q_DECLARE_METATYPE(QSettings::Status)
 
 #ifdef QT_BUILD_INTERNAL
@@ -804,7 +803,6 @@ void tst_QSettings::testIniParsing_data()
 #ifdef QT_BUILD_INTERNAL
 void tst_QSettings::testIniParsing()
 {
-    qRegisterMetaType<QVariant>("QVariant");
     qRegisterMetaType<QSettings::Status>("QSettings::Status");
 
     QDir dir(settingsPath());

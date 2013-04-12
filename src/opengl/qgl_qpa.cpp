@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtOpenGL module of the Qt Toolkit.
@@ -70,8 +70,8 @@ QGLFormat QGLFormat::fromSurfaceFormat(const QSurfaceFormat &format)
     if (format.depthBufferSize() >= 0)
         retFormat.setDepthBufferSize(format.depthBufferSize());
     if (format.samples() > 1) {
-        retFormat.setSampleBuffers(format.samples());
-        retFormat.setSamples(true);
+        retFormat.setSampleBuffers(true);
+        retFormat.setSamples(format.samples());
     }
     if (format.stencilBufferSize() > 0) {
         retFormat.setStencil(true);
@@ -100,7 +100,7 @@ QSurfaceFormat QGLFormat::toSurfaceFormat(const QGLFormat &format)
         retFormat.setRedBufferSize(format.redBufferSize());
     if (format.depth())
         retFormat.setDepthBufferSize(format.depthBufferSize() == -1 ? 1 : format.depthBufferSize());
-    retFormat.setSwapBehavior(format.doubleBuffer() ? QSurfaceFormat::DoubleBuffer : QSurfaceFormat::DefaultSwapBehavior);
+    retFormat.setSwapBehavior(format.doubleBuffer() ? QSurfaceFormat::DoubleBuffer : QSurfaceFormat::SingleBuffer);
     if (format.sampleBuffers())
         retFormat.setSamples(format.samples() == -1 ? 4 : format.samples());
     if (format.stencil())
@@ -421,7 +421,8 @@ QOpenGLContext *QGLContext::contextHandle() const
 }
 
 /*!
-    Returns a OpenGL context for the window context specified by \a windowContext
+    Returns a OpenGL context for the window context specified by the \a context
+    parameter.
 */
 QGLContext *QGLContext::fromOpenGLContext(QOpenGLContext *context)
 {

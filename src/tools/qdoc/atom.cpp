@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -349,7 +349,7 @@ QString Atom::typeString() const
         int i = 0;
         while (atms[i].english != 0) {
             if (atms[i].no != i)
-                Location::internalError(tr("atom %1 missing").arg(i));
+                Location::internalError(QCoreApplication::translate("QDoc::Atom", "atom %1 missing").arg(i));
             i++;
         }
         deja = true;

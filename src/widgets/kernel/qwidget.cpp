@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the QtGui module of the Qt Toolkit.
@@ -1391,6 +1391,14 @@ QWidget::~QWidget()
 
 
     QT_TRY {
+#ifndef QT_NO_GRAPHICSVIEW
+        const QWidget* w = this;
+        while (w->d_func()->extra && w->d_func()->extra->focus_proxy)
+            w = w->d_func()->extra->focus_proxy;
+        QWidget *window = w->window();
+        QWExtra *e = window ? window->d_func()->extra : 0;
+        if (!e || !e->proxyWidget)
+#endif
         clearFocus();
     } QT_CATCH(...) {
         // swallow this problem because we are in a destructor
@@ -2080,8 +2088,15 @@ void QWidgetPrivate::setOpaque(bool opaque)
 void QWidgetPrivate::updateIsTranslucent()
 {
     Q_Q(QWidget);
-    if (QWindow *window = q->windowHandle())
-        window->setOpacity(isOpaque ? qreal(1.0) : qreal(0.0));
+    if (QWindow *window = q->windowHandle()) {
+        QSurfaceFormat format = window->format();
+        const int oldAlpha = format.alphaBufferSize();
+        const int newAlpha = q->testAttribute(Qt::WA_TranslucentBackground)? 8 : 0;
+        if (oldAlpha != newAlpha) {
+            format.setAlphaBufferSize(newAlpha);
+            window->setFormat(format);
+        }
+    }
 }
 
 static inline void fillRegion(QPainter *painter, const QRegion &rgn, const QBrush &brush)
@@ -5474,18 +5489,6 @@ void QWidget::unsetLocale()
     d->resolveLocale();
 }
 
-static QString constructWindowTitleFromFilePath(const QString &filePath)
-{
-    QFileInfo fi(filePath);
-    QString windowTitle = fi.fileName() + QLatin1String("[*]");
-#ifndef Q_WS_MAC
-    QString appName = QApplication::applicationName();
-    if (!appName.isEmpty())
-        windowTitle += QLatin1Char(' ') + QChar(0x2014) + QLatin1Char(' ') + appName;
-#endif
-    return windowTitle;
-}
-
 /*!
     \property QWidget::windowTitle
     \brief the window title (caption)
@@ -5502,6 +5505,11 @@ static QString constructWindowTitleFromFilePath(const QString &filePath)
     windowModified property is false (the default), the placeholder
     is simply removed.
 
+    On some desktop platforms (including Windows and Unix), the application name
+    (from QGuiApplication::applicationDisplayName) is added at the end of the
+    window title, if set. This is done by the QPA plugin, so it is shown to the
+    user, but isn't part of the \l windowTitle string.
+
     \sa windowIcon, windowIconText, windowModified, windowFilePath
 */
 QString QWidget::windowTitle() const
@@ -5511,7 +5519,7 @@ QString QWidget::windowTitle() const
         if (!d->extra->topextra->caption.isEmpty())
             return d->extra->topextra->caption;
         if (!d->extra->topextra->filePath.isEmpty())
-            return constructWindowTitleFromFilePath(d->extra->topextra->filePath);
+            return QFileInfo(d->extra->topextra->filePath).fileName() + QLatin1String("[*]");
     }
     return QString();
 }
@@ -5683,24 +5691,8 @@ QString QWidget::windowIconText() const
 
     This property only makes sense for windows. It associates a file path with
     a window. If you set the file path, but have not set the window title, Qt
-    sets the window title to contain a string created using the following
-    components.
-
-    On Mac OS X:
-
-    \list
-    \li The file name of the specified path, obtained using QFileInfo::fileName().
-    \endlist
-
-    On Windows and X11:
-
-    \list
-    \li The file name of the specified path, obtained using QFileInfo::fileName().
-    \li An optional \c{*} character, if the \l windowModified property is set.
-    \li The \c{0x2014} unicode character, padded either side by spaces.
-    \li The application name, obtained from the application's
-    \l{QCoreApplication::}{applicationName} property.
-    \endlist
+    sets the window title to the file name of the specified path, obtained using
+    QFileInfo::fileName().
 
     If the window title is set at any point, then the window title takes precedence and
     will be shown instead of the file path string.
@@ -8429,7 +8421,7 @@ void QWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void QWidget::mouseDoubleClickEvent(QMouseEvent *event)
 {
-    Q_UNUSED(event);
+    event->ignore();
 }
 
 #ifndef QT_NO_WHEELEVENT
@@ -8862,6 +8854,8 @@ void QWidget::setInputMethodHints(Qt::InputMethodHints hints)
 {
 #ifndef QT_NO_IM
     Q_D(QWidget);
+    if (d->imHints == hints)
+        return;
     d->imHints = hints;
     qApp->inputMethod()->update(Qt::ImHints);
 #endif //QT_NO_IM
@@ -10266,6 +10260,7 @@ void QWidget::setWindowOpacity(qreal opacity)
     QTLWExtra *extra = d->topData();
     extra->opacity = uint(opacity * 255);
     setAttribute(Qt::WA_WState_WindowOpacitySet);
+    d->setWindowOpacity_sys(opacity);
 
     if (!testAttribute(Qt::WA_WState_Created))
         return;
@@ -10280,8 +10275,6 @@ void QWidget::setWindowOpacity(qreal opacity)
         return;
     }
 #endif
-
-    d->setWindowOpacity_sys(opacity);
 }
 
 /*!

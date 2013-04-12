@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -85,7 +85,8 @@ public:
 
     void substituteUntilNewline(Symbols &substituted);
     static Symbols macroExpandIdentifier(Preprocessor *that, SymbolStack &symbols, int lineNum, QByteArray *macroName);
-    static Symbols macroExpand(Preprocessor *that, Symbols &toExpand, int &index, int lineNum, bool one);
+    static Symbols macroExpand(Preprocessor *that, Symbols &toExpand, int &index, int lineNum, bool one,
+                               const QSet<QByteArray> &excludeSymbols = QSet<QByteArray>());
 
     int evaluateCondition();
 

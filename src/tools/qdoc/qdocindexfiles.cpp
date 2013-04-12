@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2012 Digia Plc and/or its subsidiary(-ies).
+** Copyright (C) 2013 Digia Plc and/or its subsidiary(-ies).
 ** Contact: http://www.qt-project.org/legal
 **
 ** This file is part of the tools applications of the Qt Toolkit.
@@ -190,6 +190,9 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
              ((element.nodeName() == "page") && (element.attribute("subtype") == "qmlclass"))) {
         QmlClassNode* qcn = new QmlClassNode(parent, name);
         qcn->setTitle(element.attribute("title"));
+        QString qmlModuleName = element.attribute("qml-module-name");
+        QString qmlModuleVersion = element.attribute("qml-module-version");
+        qdb_->addToQmlModule(qmlModuleName + " " + qmlModuleVersion, qcn);
         if (element.hasAttribute("location"))
             name = element.attribute("location", QString());
         if (!indexUrl.isEmpty())
@@ -208,6 +211,31 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         else if (!indexUrl.isNull())
             location = Location(name);
         node = qbtn;
+    }
+    else if (element.nodeName() == "qmlproperty") {
+        QmlClassNode* qcn = static_cast<QmlClassNode*>(parent);
+        QString type = element.attribute("type");
+        bool attached = false;
+        if (element.attribute("attached") == "true")
+            attached = true;
+        bool readonly = false;
+        if (element.attribute("writable") == "false")
+            readonly = true;
+        QmlPropertyNode* qpn = new QmlPropertyNode(qcn, name, type, attached);
+        qpn->setReadOnly(readonly);
+        node = qpn;
+    }
+    else if ((element.nodeName() == "qmlmethod") ||
+             (element.nodeName() == "qmlsignal") ||
+             (element.nodeName() == "qmlsignalhandler")) {
+        Node::Type t = Node::QmlMethod;
+        if (element.nodeName() == "qmlsignal")
+            t = Node::QmlSignal;
+        else if (element.nodeName() == "qmlsignalhandler")
+            t = Node::QmlSignalHandler;
+        bool attached = false;
+        FunctionNode* fn = new FunctionNode(t, parent, name, attached);
+        node = fn;
     }
     else if (element.nodeName() == "page") {
         Node::SubType subtype;
@@ -476,17 +504,22 @@ void QDocIndexFiles::readIndexSection(const QDomElement& element,
         InnerNode* inner = static_cast<InnerNode*>(node);
         QDomElement child = element.firstChildElement();
         while (!child.isNull()) {
-            if (element.nodeName() == "class")
+            if (element.nodeName() == "class") {
                 readIndexSection(child, inner, indexUrl);
-            else if (element.nodeName() == "qmlclass")
+            }
+            else if (element.nodeName() == "qmlclass") {
                 readIndexSection(child, inner, indexUrl);
-            else if (element.nodeName() == "page")
+            }
+            else if (element.nodeName() == "page") {
                 readIndexSection(child, inner, indexUrl);
-            else if (element.nodeName() == "namespace" && !name.isEmpty())
+            }
+            else if (element.nodeName() == "namespace" && !name.isEmpty()) {
                 // The root node in the index is a namespace with an empty name.
                 readIndexSection(child, inner, indexUrl);
-            else
+            }
+            else {
                 readIndexSection(child, parent, indexUrl);
+            }
             child = child.nextSiblingElement();
         }
     }
@@ -555,10 +588,15 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
                                           Node* node,
                                           bool generateInternalNodes)
 {
-    if (node->subType() == Node::DitaMap)
+    /*
+      Don't include index nodes in a new index file. Or DITA map nodes.
+     */
+    if (node->isIndexNode() || node->subType() == Node::DitaMap)
         return false;
 
     QString nodeName;
+    QString qmlModuleName;
+    QString qmlModuleVersion;
     switch (node->type()) {
     case Node::Namespace:
         nodeName = "namespace";
@@ -568,8 +606,11 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
         break;
     case Node::Document:
         nodeName = "page";
-        if (node->subType() == Node::QmlClass)
+        if (node->subType() == Node::QmlClass) {
             nodeName = "qmlclass";
+            qmlModuleName = node->qmlModuleName();
+            qmlModuleVersion = node->qmlModuleVersion();
+        }
         else if (node->subType() == Node::QmlBasicType)
             nodeName = "qmlbasictype";
         break;
@@ -684,6 +725,10 @@ bool QDocIndexFiles::generateIndexSection(QXmlStreamWriter& writer,
     writer.writeAttribute("status", status);
 
     writer.writeAttribute("name", objName);
+    if (!qmlModuleName.isEmpty()) {
+        writer.writeAttribute("qml-module-name", qmlModuleName);
+        writer.writeAttribute("qml-module-version", qmlModuleVersion);
+    }
     QString fullName = node->fullDocumentName();
     if (fullName != objName)
         writer.writeAttribute("fullname", fullName);
