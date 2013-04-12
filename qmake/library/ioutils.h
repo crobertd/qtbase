@@ -61,7 +61,11 @@ public:
     };
 
     static FileType fileType(const QString &fileName);
+#if defined(__CYGWIN__)
+    static bool exists(const QString &fileName) { return fileName.startsWith("//") ? false : fileType(fileName) != FileNotFound; }
+#else
     static bool exists(const QString &fileName) { return fileType(fileName) != FileNotFound; }
+#endif
     static bool isRelativePath(const QString &fileName);
     static bool isAbsolutePath(const QString &fileName) { return !isRelativePath(fileName); }
     static QStringRef fileName(const QString &fileName); // Requires normalized path
