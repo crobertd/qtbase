@@ -1,8 +1,11 @@
 #include "qeglfshooks.h"
 #include "qtptnginputcontext.h"
+#include "qtptngtheme.h"
 
 #include <QtPlatformSupport/private/qevdevtouch_p.h>
 #include <QtPlatformSupport/private/qevdevkeyboardmanager_p.h>
+
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
@@ -10,20 +13,23 @@ class QEglFSTptNgHooks : public QEglFSHooks
 {
 public:
     QEglFSTptNgHooks();
-    virtual void platformInit();
-    virtual void platformDestroy();
-    virtual EGLNativeDisplayType platformDisplay() const;
-    virtual QSize screenSize() const;
-    virtual int screenDepth() const;
-    virtual QImage::Format screenFormat() const;
-    virtual QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &inputFormat) const;
-    virtual EGLNativeWindowType createNativeWindow(const QSize &size, const QSurfaceFormat &format);
-    virtual void destroyNativeWindow(EGLNativeWindowType window);
-    virtual bool hasCapability(QPlatformIntegration::Capability cap) const;
+    void platformInit();
+    void platformDestroy();
+    EGLNativeDisplayType platformDisplay() const;
+    QSize screenSize() const;
+    int screenDepth() const;
+    QImage::Format screenFormat() const;
+    QSurfaceFormat surfaceFormatFor(const QSurfaceFormat &inputFormat) const;
+    EGLNativeWindowType createNativeWindow(const QSize &size, const QSurfaceFormat &format);
+    void destroyNativeWindow(EGLNativeWindowType window);
+    bool hasCapability(QPlatformIntegration::Capability cap) const;
     QEglFSCursor *createCursor(QEglFSScreen *screen) const;
-    virtual QPlatformInputContext *inputContext() const;
-    virtual void *nativeResourceForIntegration(const QByteArray &resource);
-    virtual void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context);
+    QPlatformInputContext *inputContext() const;
+    QStringList themeNames() const;
+    QPlatformTheme *createPlatformTheme(const QString &name) const;
+    QVariant styleHint(QPlatformIntegration::StyleHint hint) const;
+    void *nativeResourceForIntegration(const QByteArray &resource);
+    void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context);
 
 private:
     QEvdevKeyboardManager *m_keyboardHandler;
@@ -113,6 +119,24 @@ QEglFSCursor *QEglFSTptNgHooks::createCursor(QEglFSScreen *screen) const
 QPlatformInputContext *QEglFSTptNgHooks::inputContext() const
 {
     return m_inputContext;
+}
+
+QStringList QEglFSTptNgHooks::themeNames() const
+{
+    return QStringList(QLatin1String(QTptNgTheme::name));
+}
+
+QPlatformTheme *QEglFSTptNgHooks::createPlatformTheme(const QString &name) const
+{
+    if (name == QLatin1String(QTptNgTheme::name))
+        return new QTptNgTheme;
+    return 0;
+}
+
+QVariant QEglFSTptNgHooks::styleHint(QPlatformIntegration::StyleHint hint) const
+{
+    Q_UNUSED(hint);
+    return QVariant();
 }
 
 void *QEglFSTptNgHooks::nativeResourceForIntegration(const QByteArray &resource)

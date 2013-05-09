@@ -69,6 +69,10 @@ public:
 
     QAbstractEventDispatcher *guiThreadEventDispatcher() const;
 
+    QPlatformInputContext *inputContext() const;
+
+    QStringList themeNames() const;
+    QPlatformTheme *createPlatformTheme(const QString &name) const;
     QVariant styleHint(QPlatformIntegration::StyleHint hint) const;
 
     // QPlatformNativeInterface

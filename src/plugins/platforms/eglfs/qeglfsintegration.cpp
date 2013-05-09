@@ -163,11 +163,39 @@ QAbstractEventDispatcher *QEglFSIntegration::guiThreadEventDispatcher() const
     return mEventDispatcher;
 }
 
+QPlatformInputContext *QEglFSIntegration::inputContext() const
+{
+    return hooks ? hooks->inputContext() : 0;
+}
+
+QStringList QEglFSIntegration::themeNames() const
+{
+    return hooks ? hooks->themeNames() : QPlatformIntegration::themeNames();
+}
+
+QPlatformTheme *QEglFSIntegration::createPlatformTheme(const QString &name) const
+{
+    QPlatformTheme *platformTheme = hooks ? hooks->createPlatformTheme(name) : 0;
+    return platformTheme ? platformTheme : QPlatformIntegration::createPlatformTheme(name);
+}
+
 QVariant QEglFSIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
 {
+qDebug() << __FUNCTION__ << __LINE__;
     if (hint == QPlatformIntegration::ShowIsFullScreen)
         return true;
 
+qDebug() << __FUNCTION__ << __LINE__;
+    if (hooks) {
+qDebug() << __FUNCTION__ << __LINE__;
+        QVariant style = hooks->styleHint(hint);
+qDebug() << __FUNCTION__ << __LINE__;
+        if (style.isNull() == false)
+            return style;
+qDebug() << __FUNCTION__ << __LINE__;
+    }
+
+qDebug() << __FUNCTION__ << __LINE__;
     return QPlatformIntegration::styleHint(hint);
 }
 
@@ -183,22 +211,23 @@ void *QEglFSIntegration::nativeResourceForIntegration(const QByteArray &resource
     if (lowerCaseResource == "egldisplay")
         return static_cast<QEglFSScreen *>(mScreen)->display();
 
-    return 0;
+    return hooks ? hooks->nativeResourceForIntegration(resource) : 0;
 }
 
 void *QEglFSIntegration::nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context)
 {
     QByteArray lowerCaseResource = resource.toLower();
 
-    QEGLPlatformContext *handle = static_cast<QEGLPlatformContext *>(context->handle());
+    if (lowerCaseResource == "eglcontext") {
+        QEGLPlatformContext *handle = static_cast<QEGLPlatformContext *>(context->handle());
 
-    if (!handle)
-        return 0;
+        if (!handle)
+            return 0;
 
-    if (lowerCaseResource == "eglcontext")
         return handle->eglContext();
+    }
 
-    return 0;
+    return hooks ? hooks->nativeResourceForContext(resource, context) : 0;
 }
 
 QT_END_NAMESPACE

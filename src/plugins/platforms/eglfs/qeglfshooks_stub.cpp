@@ -158,6 +158,39 @@ QEglFSCursor *QEglFSHooks::createCursor(QEglFSScreen *screen) const
     return 0;
 }
 
+QPlatformInputContext *QEglFSHooks::inputContext() const
+{
+    return NULL;
+}
+
+QStringList QEglFSHooks::themeNames() const
+{
+    return QStringList();
+}
+
+QPlatformTheme *QEglFSHooks::createPlatformTheme(const QString &name) const
+{
+    return 0;
+}
+
+QVariant QEglFSHooks::styleHint(QPlatformIntegration::StyleHint hint) const
+{
+    return QVariant();
+}
+
+void *QEglFSHooks::nativeResourceForIntegration(const QByteArray &resource)
+{
+    Q_UNUSED(resource);
+    return NULL;
+}
+
+void *QEglFSHooks::nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context)
+{
+    Q_UNUSED(resource);
+    Q_UNUSED(context);
+    return NULL;
+}
+
 #ifndef EGLFS_PLATFORM_HOOKS
 QEglFSHooks stubHooks;
 #endif

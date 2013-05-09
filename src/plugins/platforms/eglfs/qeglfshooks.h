@@ -67,6 +67,12 @@ public:
     virtual void destroyNativeWindow(EGLNativeWindowType window);
     virtual bool hasCapability(QPlatformIntegration::Capability cap) const;
     virtual QEglFSCursor *createCursor(QEglFSScreen *screen) const;
+    virtual QPlatformInputContext *inputContext() const;
+    virtual QStringList themeNames() const;
+    virtual QPlatformTheme *createPlatformTheme(const QString &name) const;
+    virtual QVariant styleHint(QPlatformIntegration::StyleHint hint) const;
+    virtual void *nativeResourceForIntegration(const QByteArray &resource);
+    virtual void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context);
 };
 
 #ifdef EGLFS_PLATFORM_HOOKS
