@@ -181,21 +181,15 @@ QPlatformTheme *QEglFSIntegration::createPlatformTheme(const QString &name) cons
 
 QVariant QEglFSIntegration::styleHint(QPlatformIntegration::StyleHint hint) const
 {
-qDebug() << __FUNCTION__ << __LINE__;
     if (hint == QPlatformIntegration::ShowIsFullScreen)
         return true;
 
-qDebug() << __FUNCTION__ << __LINE__;
     if (hooks) {
-qDebug() << __FUNCTION__ << __LINE__;
         QVariant style = hooks->styleHint(hint);
-qDebug() << __FUNCTION__ << __LINE__;
         if (style.isNull() == false)
             return style;
-qDebug() << __FUNCTION__ << __LINE__;
     }
 
-qDebug() << __FUNCTION__ << __LINE__;
     return QPlatformIntegration::styleHint(hint);
 }
 

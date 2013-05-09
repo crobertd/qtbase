@@ -5,8 +5,6 @@
 #include <QtPlatformSupport/private/qevdevtouch_p.h>
 #include <QtPlatformSupport/private/qevdevkeyboardmanager_p.h>
 
-#include <QDebug>
-
 QT_BEGIN_NAMESPACE
 
 class QEglFSTptNgHooks : public QEglFSHooks
