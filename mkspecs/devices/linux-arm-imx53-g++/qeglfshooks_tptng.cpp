@@ -2,6 +2,12 @@
 #include "qtptnginputcontext.h"
 #include "qtptngtheme.h"
 
+#include <unistd.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <linux/fb.h>
+#include <sys/ioctl.h>
+
 #include <QtPlatformSupport/private/qevdevtouch_p.h>
 #include <QtPlatformSupport/private/qevdevkeyboardmanager_p.h>
 
@@ -33,12 +39,14 @@ private:
     QEvdevKeyboardManager *m_keyboardHandler;
     QEvdevTouchScreenHandlerThread *m_touchHandler;
     QTptNgInputContext *m_inputContext;
+    QSize m_screenSize;
 };
 
 QEglFSTptNgHooks::QEglFSTptNgHooks()
     : m_keyboardHandler(0)
     , m_touchHandler(0)
     , m_inputContext(0)
+    , m_screenSize(800, 480)
 {
 }
 
@@ -50,6 +58,17 @@ void QEglFSTptNgHooks::platformInit()
 
     // Turn off the cursor
     qputenv("QT_QPA_EGLFS_HIDECURSOR", "1");
+
+    // Read the screen width and height
+    int fbfd = open("/dev/fb0", O_RDWR);
+    if (fbfd >= 0) {
+        struct fb_var_screeninfo vinfo;
+        if (ioctl(fbfd, FBIOGET_VSCREENINFO, &vinfo) == 0) {
+            m_screenSize.setWidth(vinfo.xres);
+            m_screenSize.setHeight(vinfo.yres);
+        }
+        close(fbfd);
+    }
 }
 
 void QEglFSTptNgHooks::platformDestroy()
@@ -66,7 +85,7 @@ EGLNativeDisplayType QEglFSTptNgHooks::platformDisplay() const
 
 QSize QEglFSTptNgHooks::screenSize() const
 {
-    return QSize(800, 480);
+    return m_screenSize;
 }
 
 int QEglFSTptNgHooks::screenDepth() const
