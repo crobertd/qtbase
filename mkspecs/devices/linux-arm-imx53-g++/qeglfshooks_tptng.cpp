@@ -10,6 +10,9 @@
 
 #include <QtPlatformSupport/private/qevdevtouch_p.h>
 #include <QtPlatformSupport/private/qevdevkeyboardmanager_p.h>
+#include <QFile>
+#include <QRegExp>
+#include <QDebug>
 
 QT_BEGIN_NAMESPACE
 
@@ -36,10 +39,17 @@ public:
     void *nativeResourceForContext(const QByteArray &resource, QOpenGLContext *context);
 
 private:
+    enum Platform
+    {
+        Equinox41 = 41,
+        Equinox73 = 73
+    };
+
     QEvdevKeyboardManager *m_keyboardHandler;
     QEvdevTouchScreenHandlerThread *m_touchHandler;
     QTptNgInputContext *m_inputContext;
     QSize m_screenSize;
+    Platform m_platform;
 };
 
 QEglFSTptNgHooks::QEglFSTptNgHooks()
@@ -52,6 +62,22 @@ QEglFSTptNgHooks::QEglFSTptNgHooks()
 
 void QEglFSTptNgHooks::platformInit()
 {
+    // Determine which platform this is...
+    QFile cpuinfo("/proc/cpuinfo");
+    if (cpuinfo.open(QIODevice::ReadOnly) == true) {
+        QByteArray line;
+        while ((line = cpuinfo.readLine()).isNull() == false) {
+            if (line.indexOf("Hardware") >= 0) {
+                // We found the hardware, extract it!
+                QRegExp equinox("Equinox(\\d+)");
+                if (equinox.indexIn(line) >= 0)
+                    m_platform = Platform(equinox.cap(1).toInt());
+                break;
+            }
+        }
+        cpuinfo.close();
+    }
+
     m_keyboardHandler = new QEvdevKeyboardManager(QLatin1String("EvdevKeyboard"), QString() /* spec */);
     m_touchHandler = new QEvdevTouchScreenHandlerThread(QString() /* spec */);
     m_inputContext = new QTptNgInputContext();
@@ -64,11 +90,27 @@ void QEglFSTptNgHooks::platformInit()
     if (fbfd >= 0) {
         struct fb_var_screeninfo vinfo;
         if (ioctl(fbfd, FBIOGET_VSCREENINFO, &vinfo) == 0) {
-            m_screenSize.setWidth(vinfo.xres);
-            m_screenSize.setHeight(vinfo.yres);
+            switch (m_platform) {
+            case Equinox41:
+                // Equinox41 is in Portrait mode
+                m_screenSize.setWidth(vinfo.yres);
+                m_screenSize.setHeight(vinfo.xres);
+                break;
+            case Equinox73:
+                // Equinox73 is in Landscape mode
+                m_screenSize.setWidth(vinfo.xres);
+                m_screenSize.setHeight(vinfo.yres);
+            default:
+                // We don't know what this is... use Landscape mode
+                m_screenSize.setWidth(vinfo.xres);
+                m_screenSize.setHeight(vinfo.yres);
+                break;
+            }
         }
         close(fbfd);
     }
+
+    qDebug("Platform support for Equinox%d: %dx%d", int(m_platform), m_screenSize.width(), m_screenSize.height());
 }
 
 void QEglFSTptNgHooks::platformDestroy()
