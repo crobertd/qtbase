@@ -123,6 +123,7 @@ public:
     virtual QImage alphaRGBMapForGlyph(glyph_t t, QFixed subPixelPosition, const QTransform &xform);
 
     virtual QFontEngine *cloneWithSize(qreal pixelSize) const;
+    virtual bool supportsTransformation(const QTransform &transform) const;
 
 #ifndef Q_CC_MINGW
     virtual void getGlyphBearings(glyph_t glyph, qreal *leftBearing = 0, qreal *rightBearing = 0);
@@ -192,4 +193,3 @@ Q_DECLARE_METATYPE(HFONT)
 Q_DECLARE_METATYPE(LOGFONT)
 
 #endif // QWINDOWSFONTENGINE_H
-
