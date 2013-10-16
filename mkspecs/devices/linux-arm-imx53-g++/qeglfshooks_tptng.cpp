@@ -93,8 +93,8 @@ void QEglFSTptNgHooks::platformInit()
             switch (m_platform) {
             case Equinox41:
                 // Equinox41 is in Portrait mode
-                m_screenSize.setWidth(vinfo.yres);
-                m_screenSize.setHeight(vinfo.xres);
+                m_screenSize.setWidth(vinfo.xres);
+                m_screenSize.setHeight(vinfo.yres);
                 break;
             case Equinox73:
                 // Equinox73 is in Landscape mode
